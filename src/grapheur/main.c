@@ -31,3 +31,5 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+// gcc ./src/grapheur/main.c -o opengl_test -lGL -lGLU -lglut
