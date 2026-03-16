@@ -6,7 +6,11 @@ float Eval(Arbre* A, float x);
 
 
 float cos(float x);
-
+float sin(float x);
+float sqrt(float x);
+float log(float x);
+float tan(float x);
+float exp(float x);
 
 
 

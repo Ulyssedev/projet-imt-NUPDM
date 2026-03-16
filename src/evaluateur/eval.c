@@ -77,6 +77,48 @@ float sin(float x){
     float res = x;
     float terme = 1.0;
     for (i=1;i<=10;i++){
-        terme *= -x 
+        terme *= -x * x / ((2*i) * (2*i+1));
+        res += terme;
     }
+}
+
+float sqrt(float x){
+    if (x<=0){
+        return 0; //erreur
+    }
+    int precision = 0.00001;
+    float estimation = x;
+    float estimation_prec;
+    while (estimation - estimation_prec > precision){
+        estimation_prec = estimation;
+        estimation = (estimation_prec + x/estimation_prec)/2.0;
+    }
+    return estimation;
+}
+
+float log(float x){
+    if (x<1){
+        return -1e38;
+    }
+    float z = (x-1.0)/(x+1.0);
+    float terme = z;
+    float res = z;
+    int i;
+    for (i=1;i<=15;i++){
+        terme *= z*z;
+        res += terme/(2*i+1);
+    }
+    return res/2.0;
+}
+
+float tan(float x){
+    float c = cos(x);
+    if (c == 0){ //ERREUR
+    return x;
+    }
+    return sin(x)/c
+}
+
+float exp(float x){
+    
 }
