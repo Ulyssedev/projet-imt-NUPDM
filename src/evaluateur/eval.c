@@ -120,5 +120,13 @@ float tan(float x){
 }
 
 float exp(float x){
-    
+    int i;
+    float terme =1.0;
+    float res= 1.0;
+    for (i=1;i<=15;i++){
+        terme *= -x;
+        res += terme/(i+1);
+    }
+    return res;
 }
+
