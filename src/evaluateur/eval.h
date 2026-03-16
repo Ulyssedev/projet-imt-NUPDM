@@ -11,6 +11,11 @@ float sqrt(float x);
 float log(float x);
 float tan(float x);
 float exp(float x);
+float abs(float x);
+float entier(float x);
+float val_neg(float x);
+float sinc(float x);
+
 
 
 

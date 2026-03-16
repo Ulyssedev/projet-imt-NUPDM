@@ -36,6 +36,13 @@ float Eval(Arbre A, float x){
                 break;
                 case ENTIER:
                     return entier(Eval(A->fg,x));
+                break;
+                case SINC :
+                    return sinc(Eval(A->fg,x));
+                break;
+                case VAL_NEG :
+                    return val_neg(Eval(A->fg,x));
+                break;
             }
         break; 
         case OPERATEUR :
@@ -121,6 +128,9 @@ float tan(float x){
 
 float exp(float x){
     int i;
+    if (x=0){
+        return 1.0;
+    }
     float terme =1.0;
     float res= 1.0;
     for (i=1;i<=15;i++){
@@ -130,3 +140,30 @@ float exp(float x){
     return res;
 }
 
+float abs(float x){
+    if (x<0){
+        return -x;
+    }
+    return x;
+}
+
+float entier(float x){
+    if ((x + 0.5)> floor(x)){
+        return floor(x) +1;
+    }
+    return floor(x);
+}
+
+float val_neg(float x){
+    if (x>0){
+        return -x;
+    }
+    return x;
+}
+
+float sinc(float x){
+    if (x==0){
+        return 1.0;
+    }
+    return sin(x)/x;
+}
