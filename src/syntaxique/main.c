@@ -1,11 +1,4 @@
-#include "../common/jeton.h"
-
-enum {
-  SYNTAXE_OK = 0,
-  SYNTAXE_ERREUR_ARGUMENT = 1,
-  SYNTAXE_ERREUR_GRAMMAIRE = 2,
-  SYNTAXE_ERREUR_FIN_MANQUANTE = 3
-};
+#include "syntaxique.h"
 
 typedef struct {
   const typejeton *entree;
@@ -15,7 +8,7 @@ typedef struct {
 } ContexteSyntaxe;
 
 static int est_parenthese_fermante(typetoken token) {
-  return token == PAR_FERM;
+  return token == PAR_FERM || token == PAR_FEM;
 }
 
 static typetoken token_courant(const ContexteSyntaxe *ctx) {
@@ -106,5 +99,13 @@ int convertir_en_postfixe(typejeton entree[], typejeton sortie[]) {
     return SYNTAXE_ERREUR_FIN_MANQUANTE;
   }
 
+  return SYNTAXE_OK;
+}
+
+// TODO: faire une vraie implémentation de cette fonction car c'est la syntaxe
+// qui s'en occupe ;( ;( ;(
+int convertir_code_postfixe_en_arbre(typejeton code_postfixe[], Arbre *arbre) {
+  (void)code_postfixe;
+  (void)arbre;
   return SYNTAXE_OK;
 }
