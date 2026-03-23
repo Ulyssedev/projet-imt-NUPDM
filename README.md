@@ -1,29 +1,19 @@
-# Projet IMT - Techniques de programmation avancées
-Ce projet à pour but de faire un interpréteur graphique en C pour la matière programmation avancée en C de l'IMT.
+# Projet IMT Nord Europe - Interpréteur graphique en C
 
-## Équipe de développement
+Ce dépôt contient le projet de programmation avancée de l'IMT Nord Europe, réaliser un interpréteur graphique en C, réparti en plusieurs sous-modules (lexical, syntaxique, évaluateur, dialogueur et grapheur).
 
-### Chef de projet
-Ulysse Curier
 
-### Lexique
-Amine Mallem \
-Titouan Genoud \
-Karl Bouisseren
+## Équipe
 
-### Syntaxe
-Ulysse Curier \
-Kaufman Adam
+- **Chef de projet** : Ulysse Curier
+- **Lexique** : Amine Mallem, Titouan Genoud, Karl Bouisseren
+- **Syntaxe** : Ulysse Curier, Kaufman Adam
+- **Évaluateur** : Adrien Vancompernolle, Wassim Ouffroukh
+- **Grapheur** : Elie Haidar, Alexandre Teyssier
 
-### Evaluateur
-Adrien Vancompernolle \
-Wassim Ouffroukh
+## Structure du dépôt
 
-### Grapheur
-Elie Haidar \
-Alexandre Teyssier
-
-## Structure du projet proposée
+Arborescence principale :
 
 ```
 ├── ReadMe.MD           # Rapports d'utilisation, maintenance et ReadMe (à séparer dans d'autres fichiers potentiellement)
@@ -39,4 +29,90 @@ Alexandre Teyssier
 └── Makefile            # Automatisation de la compilation et édition des liens
 ```
 
-*Cette structure est à titre indicatif et va surement évoluer au cours du projet*
+## Prérequis
+
+Installer les dépendances nécessaires pour la compilation et l'exécution (Ubuntu) :
+
+```bash
+sudo apt update
+sudo apt install build-essential libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+```
+
+Le Makefile utilise `gcc` par défaut. Vous pouvez remplacer le compilateur et les flags en ligne de commande :
+
+```bash
+make CC=clang CFLAGS="-O2"
+```
+
+## Compilation
+
+Les exécutables sont placés dans le répertoire `build/`.
+
+- **Compilation complète (par défaut)** :
+
+```bash
+make        # équivalent à `make all`
+# Sortie : build/projet-imt
+```
+
+- **Construire un sous-module spécifique** :
+
+Le `Makefile` définit des cibles par sous-groupe et chaque cible produit un binaire distinct dans `build/` :
+
+- **Grapheur** :
+
+```bash
+make grapheur
+# Sortie : build/projet-imt-grapheur
+```
+
+- **Lexical** :
+
+```bash
+make lexical
+# Sortie : build/projet-imt-lexical
+```
+
+- **Dialogueur** :
+
+```bash
+make dialogueur
+# Sortie : build/projet-imt-dialogueur
+```
+
+- **Evaluateur** :
+
+```bash
+make evaluateur
+# Sortie : build/projet-imt-evaluateur
+```
+
+- **Syntaxique** :
+
+```bash
+make syntaxique
+# Sortie : build/projet-imt-syntaxique
+```
+
+Notes :
+
+- Les cibles compilent les sources du sous-dossier concerné + `src/common`.
+- Les objets temporaires sont générés sous `build/` en conservant l'arborescence source.
+
+## Exécution
+
+Après compilation, lancez l'exécutable correspondant depuis la racine du dépôt, par exemple :
+
+```bash
+./build/projet-imt-grapheur
+# ou
+./build/projet-imt
+```
+
+## Nettoyage
+
+Pour supprimer les fichiers de build :
+
+```bash
+make clean
+```
