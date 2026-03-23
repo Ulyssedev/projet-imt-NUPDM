@@ -1,5 +1,6 @@
 #include "eval.h"
 #include "jeton.h"
+#include <math.h>
 
 float Eval(Arbre A, float x){
     switch(A->jeton.lexem)
@@ -14,34 +15,34 @@ float Eval(Arbre A, float x){
             switch(A->jeton.valeur.fonction)
             {
                 case SIN:
-                    return sin(Eval(A->fg,x));
+                    return sin(Eval(A->pjeton_preced,x));
                 break;
                 case COS:
-                    return cos(Eval(A->fg,x));
+                    return cos(Eval(A->pjeton_preced,x));
                 break;
                 case SQRT:
-                    return sqrt(Eval(A->fg,x));
+                    return sqrt(Eval(A->pjeton_preced,x));
                 break;
                 case ABS:
-                    return abs(Eval(A->fg,x));
+                    return abs(Eval(A->pjeton_preced,x));
                 break;
                 case LOG:
-                    return log(Eval(A->fg,x));
+                    return log(Eval(A->pjeton_preced,x));
                     break;
                 case TAN:
-                    return tan(Eval(A->fg,x));
+                    return tan(Eval(A->pjeton_preced,x));
                     break;
                 case EXP:
-                    return exp(Eval(A->fg,x));
+                    return exp(Eval(A->pjeton_preced,x));
                 break;
                 case ENTIER:
-                    return entier(Eval(A->fg,x));
+                    return entier(Eval(A->pjeton_preced,x));
                 break;
                 case SINC :
-                    return sinc(Eval(A->fg,x));
+                    return sinc(Eval(A->pjeton_preced,x));
                 break;
                 case VAL_NEG :
-                    return val_neg(Eval(A->fg,x));
+                    return val_neg(Eval(A->pjeton_preced,x));
                 break;
             }
         break; 
@@ -49,19 +50,19 @@ float Eval(Arbre A, float x){
             switch(A->jeton.valeur.operateur)
             {
                 case PLUS :
-                    return Eval(A->fg,x) + Eval(A->fd,x);
+                    return Eval(A->pjeton_preced,x) + Eval(A->pjeton_suiv,x);
                 break;
                 case MOINS :
-                    return Eval(A->fg,x) - Eval(A->fd,x);
+                    return Eval(A->pjeton_preced,x) - Eval(A->pjeton_suiv,x);
                 break;
                 case FOIS :
-                    return Eval(A->fg,x) * Eval(A->fd,x);
+                    return Eval(A->pjeton_preced,x) * Eval(A->pjeton_suiv,x);
                 break;
                 case DIV :
-                    return Eval(A->fg,x) / Eval(A->fd,x);
+                    return Eval(A->pjeton_preced,x) / Eval(A->pjeton_suiv,x);
                 break;
                 case PUIS :
-                    return Eval(A->fg,x)**(Eval(A->fd,x));
+                    return Eval(A->pjeton_preced,x)**(Eval(A->pjeton_suiv,x));
                 break;
             }
     }
@@ -87,13 +88,14 @@ float sin(float x){
         terme *= -x * x / ((2*i) * (2*i+1));
         res += terme;
     }
+    return res;
 }
 
 float sqrt(float x){
     if (x<=0){
         return 0; //erreur
     }
-    int precision = 0.00001;
+    float precision = 0.00001;
     float estimation = x;
     float estimation_prec;
     while (estimation - estimation_prec > precision){
@@ -123,12 +125,12 @@ float tan(float x){
     if (c == 0){ //ERREUR
     return x;
     }
-    return sin(x)/c
+    return sin(x)/c;
 }
 
 float exp(float x){
     int i;
-    if (x=0){
+    if (x==0){
         return 1.0;
     }
     float terme =1.0;
