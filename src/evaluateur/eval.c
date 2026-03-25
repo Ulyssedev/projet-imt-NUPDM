@@ -2,7 +2,7 @@
 #include "jeton.h"
 #include <math.h>
 
-// Fonction récursive principale : elle parcourt ton arbre syntaxique (AST) pour calculer l'expression finale
+// Fonction récursive principale : elle parcourt l'arbre syntaxique (AST) pour calculer l'expression finale
 float Eval(Arbre A, float x){
     switch(A->jeton.lexem)
     {
@@ -10,7 +10,7 @@ float Eval(Arbre A, float x){
             return A->jeton.valeur.reel;
         break;
         case VARIABLE :
-            return x; // C'est ici qu'on injecte la valeur de ta variable dans l'équation
+            return x; // C'est ici qu'on injecte la valeur de la variable dans l'équation
         break;
         case FONCTION:
             // On évalue d'abord l'argument (pjeton_preced) avant de lui appliquer la fonction mathématique
@@ -37,14 +37,13 @@ float Eval(Arbre A, float x){
                 case FOIS : return Eval(A->pjeton_preced,x) * Eval(A->pjeton_suiv,x); break;
                 case DIV : return Eval(A->pjeton_preced,x) / Eval(A->pjeton_suiv,x); break;
                 case PUIS : 
-                    // Attention frérot : l'opérateur '**' n'existe pas en C. Il faudrait utiliser pow() de <math.h> ici !
-                    return Eval(A->pjeton_preced,x)**(Eval(A->pjeton_suiv,x)); 
+                    return pow(Eval(A->pjeton_preced,x), Eval(A->pjeton_suiv,x));
                 break;
             }
     }
 }
 
-// --- Fonctions mathématiques "maison" (la plupart utilisent des développements en série pour approximer le résultat) ---
+// --- Fonctions mathématiques "maison" ---
 
 float cos(float x){
     int i;
@@ -76,9 +75,9 @@ float sqrt(float x){
     }
     float precision = 0.00001;
     float estimation = x;
-    float estimation_prec = 0; // Attention : j'ai ajouté "= 0" car sinon elle était utilisée non initialisée dans le while
+    float estimation_prec = 0; 
     
-    // Calcul de la racine carrée par la méthode de Héron (ou Newton-Raphson)
+    // Calcul de la racine carrée par la méthode de Héron 
     while (estimation - estimation_prec > precision){
         estimation_prec = estimation;
         estimation = (estimation_prec + x/estimation_prec)/2.0;
