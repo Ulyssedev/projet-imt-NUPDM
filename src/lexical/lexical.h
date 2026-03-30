@@ -1,15 +1,22 @@
 #include "../common/jeton.h"
 #include <stddef.h>
 
+//defines the maximum size of a multi_char token like a function name or a number, including null terminator
+// a value of 256 means a function name / number can't be longer than 255 characters
+#define MAX_MULTI_CHAR_SIZE 256
+#define ERROR_MESSAGE_SIZE 512
 
+typedef enum
+{
+    UNKNOWN_FUNCTION,
+    INVALID_CHARACTER,
+    TOKEN_TOO_LONG
+} lexical_error_type_t;
 typedef struct
 {
-    enum type_t
-    {
-        UNKNOWN_FUNCTION,
-        INVALID_CHARACTER
-    };
-    char* message;
+    lexical_error_type_t type;
+    int at_index;
+    char message[ERROR_MESSAGE_SIZE]; // null terminated
 } lexical_error_t;
 
 
@@ -22,7 +29,7 @@ typedef struct
 // puissance : ^
 //sin(x*abs(x))+2
 
-// if error_t* is not nullptr error_t::message must be freed after use
+// in case of an error, lexical_tokens_t::tokens and lexical_tokens_t::size will be null
 // expression must be null terminated ascii
 // lexical_tokens_t::tokens must be freed if not null
-lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* error/* optional */);
+lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* error /* out optional, set to NULL if not used */);
