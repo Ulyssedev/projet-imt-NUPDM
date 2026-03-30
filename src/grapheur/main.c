@@ -1,6 +1,5 @@
 #include "./include/main.h"
 #include <GL/freeglut_std.h>
-#include <stdio.h>
 
 static Point pts[NPOINTS];
 
@@ -19,7 +18,9 @@ void display() {
   graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
 
   if (space_pressed == 1) {
-    red_axes_cursor();
+    int mouse_x, mouse_y;
+    GETMOUSEPOS(&mouse_x, &mouse_y);
+    red_axes_cursor(mouse_x, mouse_y);
   }
 
   /* Draw a small label in the top-left corner */

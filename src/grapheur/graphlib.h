@@ -97,11 +97,8 @@ void graph_draw_grid_min_lines(float x_step, float y_step);
 
 void graph_draw_numbers(float x_step, float y_step);
 
-<<<<<<< HEAD
 void red_axes_cursor(int mouse_x, int mouse_y);
-=======
 /*Len charactere chain*/
 int strlen(char s[]);
->>>>>>> 504fecf7057802d5050065aea9e3a8f48739af96
 
 #endif // GRAPHLIB_H
