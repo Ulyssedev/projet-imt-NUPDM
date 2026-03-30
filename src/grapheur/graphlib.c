@@ -188,12 +188,12 @@ void graph_draw_numbers(float x_step, float y_step){
       snprintf(nombre, sizeof(nombre), "%g", x);
       if(x>0){
         int x_pixel, y_pixel;
-        world_to_pixels(x-0.1f, 0.3f, &x_pixel, &y_pixel);
+        world_to_pixels(x-0.1f, -0.45f, &x_pixel, &y_pixel);
         graph_draw_text(nombre, x_pixel, y_pixel);
       }
       else{
         int x_pixel, y_pixel;
-        world_to_pixels(x-0.35f, 0.3f, &x_pixel, &y_pixel);
+        world_to_pixels(x-0.38f, -0.45f, &x_pixel, &y_pixel);
         graph_draw_text(nombre, x_pixel, y_pixel);
       }
     }
@@ -201,11 +201,31 @@ void graph_draw_numbers(float x_step, float y_step){
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
   for (float y = start_y; y <= gy_max; y += y_step) {
-    char nombre[32];
-    snprintf(nombre, sizeof(nombre), "%g", y);
-    int x_pixel, y_pixel;
-    world_to_pixels(-0.5f, y, &x_pixel, &y_pixel);
-    graph_draw_text(nombre, x_pixel, y_pixel);
+    if(y==0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", y);
+      int x_pixel, y_pixel;
+      world_to_pixels(-0.4f, -0.4f, &x_pixel, &y_pixel);
+      graph_draw_text(nombre, x_pixel, y_pixel);
+    }
+    else {
+      if(y>0){
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*(longeur-1), y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else {
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*longeur, y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 }
 
@@ -236,3 +256,12 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
 
   glEnd();
 }
+
+/*Len charactere chain*/
+int strlen(char s[]) {
+    int i;
+    i=0;
+    while(s[i]!='\0')
+        ++i;
+    return i;
+    }

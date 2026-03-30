@@ -14,7 +14,7 @@ void world_to_pixels(float wx, float wy, int *sx, int *sy) {
   if (sx)
     *sx = (int)((wx - gx_min) * (float)g_win_w / (gx_max - gx_min) + 0.5f);
   if (sy)
-    *sy = (int)((gy_max - wy) * (float)g_win_h / (gy_max - gy_min) + 0.5f);
+    *sy = (int)((wy - gy_min) * (float)g_win_h / (gy_max - gy_min) + 0.5f);
 }
 
 /** Convert normalized device coords (-1..1) to pixel coordinates. */
