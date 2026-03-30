@@ -186,7 +186,7 @@ void graph_draw_numbers(float x_step, float y_step){
     char nombre = (char)x;
     int x_pixel, y_pixel;
     world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
-    graph_draw_text(nombre, x_pixel, y_pixel);
+    graph_draw_text(&nombre, x_pixel, y_pixel);
   }
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
@@ -194,7 +194,7 @@ void graph_draw_numbers(float x_step, float y_step){
     char nombre = (char)y;
     int x_pixel, y_pixel;
     world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
-    graph_draw_text(nombre, x_pixel, y_pixel);
+    graph_draw_text(&nombre, x_pixel, y_pixel);
   }
 }
 

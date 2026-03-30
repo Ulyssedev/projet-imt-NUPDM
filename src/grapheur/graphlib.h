@@ -5,6 +5,7 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include "./utils/global.h"
+#include "./utils/pixels.h"
 
 /** Simple 2D point in world coordinates. */
 typedef struct {
