@@ -1,6 +1,5 @@
 #include "eval.h"
-#include "jeton.h"
-#include <math.h>
+
 
 // Fonction récursive principale : elle parcourt l'arbre syntaxique (AST) pour calculer l'expression finale
 float Eval(Arbre A, float x){
@@ -16,13 +15,13 @@ float Eval(Arbre A, float x){
             // On évalue d'abord l'argument (pjeton_preced) avant de lui appliquer la fonction mathématique
             switch(A->jeton.valeur.fonction)
             {
-                case SIN: return sin(Eval(A->pjeton_preced,x)); break;
-                case COS: return cos(Eval(A->pjeton_preced,x)); break;
-                case SQRT: return sqrt(Eval(A->pjeton_preced,x)); break;
-                case ABS: return abs(Eval(A->pjeton_preced,x)); break;
-                case LOG: return log(Eval(A->pjeton_preced,x)); break;
-                case TAN: return tan(Eval(A->pjeton_preced,x)); break;
-                case EXP: return exp(Eval(A->pjeton_preced,x)); break;
+                case SIN: return my_sin(Eval(A->pjeton_preced,x)); break;
+                case COS: return my_cos(Eval(A->pjeton_preced,x)); break;
+                case SQRT: return my_sqrt(Eval(A->pjeton_preced,x)); break;
+                case ABS: return my_abs(Eval(A->pjeton_preced,x)); break;
+                case LOG: return my_log(Eval(A->pjeton_preced,x)); break;
+                case TAN: return my_tan(Eval(A->pjeton_preced,x)); break;
+                case EXP: return my_exp(Eval(A->pjeton_preced,x)); break;
                 case ENTIER: return entier(Eval(A->pjeton_preced,x)); break;
                 case SINC : return sinc(Eval(A->pjeton_preced,x)); break;
                 case VAL_NEG : return val_neg(Eval(A->pjeton_preced,x)); break;
@@ -45,7 +44,7 @@ float Eval(Arbre A, float x){
 
 // --- Fonctions mathématiques "maison" ---
 
-float cos(float x){
+float my_cos(float x){
     int i;
     float res = 1.0;
     float terme = 1.0;
@@ -57,7 +56,7 @@ float cos(float x){
     return res;
 }
 
-float sin(float x){
+float my_sin(float x){
     int i;
     float res = x;
     float terme = 1.0;
@@ -69,7 +68,7 @@ float sin(float x){
     return res;
 }
 
-float sqrt(float x){
+float my_sqrt(float x){
     if (x<=0){
         return 0; // Sécurité de base
     }
@@ -85,7 +84,7 @@ float sqrt(float x){
     return estimation;
 }
 
-float log(float x){
+float my_log(float x){
     if (x<1){
         return -1e38; // Valeur très basse pour simuler -l'infini en évitant le crash
     }
@@ -101,15 +100,15 @@ float log(float x){
     return res/2.0;
 }
 
-float tan(float x){
-    float c = cos(x);
+float my_tan(float x){
+    float c = my_cos(x);
     if (c == 0){ // Protection contre la division par zéro
         return x;
     }
-    return sin(x)/c;
+    return my_sin(x)/c;
 }
 
-float exp(float x){
+float my_exp(float x){
     int i;
     if (x==0){
         return 1.0;
@@ -124,7 +123,7 @@ float exp(float x){
     return res;
 }
 
-float abs(float x){
+float my_abs(float x){
     // Retourne la valeur absolue
     if (x<0){
         return -x;
@@ -153,5 +152,5 @@ float sinc(float x){
     if (x==0){
         return 1.0; // Limite usuelle quand x tend vers 0
     }
-    return sin(x)/x;
+    return my_sin(x)/x;
 }
