@@ -1,10 +1,12 @@
 #include "./include/main.h"
+#include <GL/freeglut_std.h>
 
 static Point pts[NPOINTS];
 
 /* Interaction state for pan/zoom */
 static int g_dragging = 0;
 static int g_last_x = 0, g_last_y = 0;
+static int space_pressed = 0;
 
 /** GLUT display callback: clear the buffer and render the scene. */
 void display() {
@@ -14,6 +16,12 @@ void display() {
   graph_draw_numbers(1.0f, 1.0f);
   graph_draw_axes();
   graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
+
+  if (space_pressed == 1) {
+    int mouse_x, mouse_y;
+    GETMOUSEPOS(&mouse_x, &mouse_y);
+    red_axes_cursor(mouse_x, mouse_y);
+  }
 
   /* Draw a small label in the top-left corner */
   graph_draw_text_top_left("sin");
@@ -30,7 +38,6 @@ void graph_reshape(int w, int h) {
   glViewport(0, 0, w, h);
 }
 
-/* Mouse button callback: handles wheel (button 3/4) and start/end drag */
 /** Mouse button callback: handle wheel zoom and begin/end drag for panning.
  * Wheel events are reported as button 3 (up) / 4 (down) by GLUT.
  */
@@ -56,7 +63,6 @@ void mouse_button(int button, int state, int x, int y) {
   }
 }
 
-/* Mouse motion callback while a button is pressed: perform pan */
 /** Mouse motion callback while a button is pressed: perform pan.
  * Converts pixel deltas into world-space pan so the point under the cursor
  * remains fixed during dragging.
@@ -75,11 +81,27 @@ void mouse_motion(int x, int y) {
   glutPostRedisplay();
 }
 
+/** Mouse motion callback while a button is pressed: perform pan.
+ * Converts pixel deltas into world-space pan so the point under the cursor
+ * remains fixed during dragging.
+ */
+void keyboard_button(unsigned char key, int x, int y) {
+  if (key == ' ') {
+    if (space_pressed == 1) {
+      space_pressed = 0;
+    } else {
+      space_pressed = 1;
+    }
+  }
+  glutPostRedisplay();
+}
+
 /** Program entry: initialize the window, set up data and register callbacks.
  * Enters the GLUT main loop and does not return under normal execution.
  */
 int main(int argc, char **argv) {
-  graph_init_window(&argc, argv, 1000, 700, "Calculatrice Graphique : GraphitXcalc");
+  graph_init_window(&argc, argv, 1000, 700,
+                    "Calculatrice Graphique : GraphitXcalc");
   graph_set_background(0.05f, 0.05f, 0.05f);
   world_set_view(-10.0f, 10.0f, -6.0f, 6.0f);
 
@@ -93,6 +115,7 @@ int main(int argc, char **argv) {
   glutReshapeFunc(graph_reshape);
   glutMouseFunc(mouse_button);
   glutMotionFunc(mouse_motion);
+  glutKeyboardFunc(keyboard_button);
   glutMainLoop();
 
   return 0;

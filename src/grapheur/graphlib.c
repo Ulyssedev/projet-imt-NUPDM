@@ -1,5 +1,6 @@
 #include "graphlib.h"
 #include "utils/world.h"
+#include <GL/gl.h>
 #include <math.h>
 
 PFNGLWINDOWPOS2IPROC glWindowPos2i;
@@ -176,30 +177,57 @@ void graph_draw_text_top_left(const char *text) {
   graph_draw_text(text, pad_x, win_y);
 }
 
-
 /*Draw numbers of graduation of axis*/
-void graph_draw_numbers(float x_step, float y_step){
+void graph_draw_numbers(float x_step, float y_step) {
   graph_apply_view();
 
   float start_x = (int)floorf(gx_min / x_step) * x_step;
   for (float x = start_x; x <= gx_max; x += x_step) {
-    char nombre = (char)x;
-    int x_pixel, y_pixel;
-    world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
-    graph_draw_text(&nombre, x_pixel, y_pixel);
+    if(x!=0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", x);
+      if(x>0){
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.1f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else{
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.38f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
   for (float y = start_y; y <= gy_max; y += y_step) {
-    char nombre = (char)y;
-    int x_pixel, y_pixel;
-    world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
-    graph_draw_text(&nombre, x_pixel, y_pixel);
+    if(y==0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", y);
+      int x_pixel, y_pixel;
+      world_to_pixels(-0.4f, -0.4f, &x_pixel, &y_pixel);
+      graph_draw_text(nombre, x_pixel, y_pixel);
+    }
+    else {
+      if(y>0){
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*(longeur-1), y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else {
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*longeur, y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 }
-
-
-
 
 /*Draw small lines to graduate axis*/
 void graph_draw_grid_min_lines(float x_step, float y_step) {
@@ -225,3 +253,31 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
 
   glEnd();
 }
+
+void red_axes_cursor(int mouse_x, int mouse_y) {
+  float wx, wy;
+
+  /* Convert from pixels to world coordinates */
+  pixels_to_world(mouse_x, mouse_y, &wx, &wy);
+
+  graph_apply_view();
+  glLineWidth(1.5f);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glBegin(GL_LINES);
+
+  glVertex2f(wx, gy_min);
+  glVertex2f(wx, gy_max);
+
+  glVertex2f(gx_min, wy);
+  glVertex2f(gx_max, wy);
+
+  glEnd();
+}
+/*Len charactere chain*/
+int strlen(char s[]) {
+    int i;
+    i=0;
+    while(s[i]!='\0')
+        ++i;
+    return i;
+    }
