@@ -183,18 +183,29 @@ void graph_draw_numbers(float x_step, float y_step){
 
   float start_x = (int)floorf(gx_min / x_step) * x_step;
   for (float x = start_x; x <= gx_max; x += x_step) {
-    char nombre = (char)x;
-    int x_pixel, y_pixel;
-    world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
-    graph_draw_text(&nombre, x_pixel, y_pixel);
+    if(x!=0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", x);
+      if(x>0){
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.1f, 0.3f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else{
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.35f, 0.3f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
   for (float y = start_y; y <= gy_max; y += y_step) {
-    char nombre = (char)y;
+    char nombre[32];
+    snprintf(nombre, sizeof(nombre), "%g", y);
     int x_pixel, y_pixel;
-    world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
-    graph_draw_text(&nombre, x_pixel, y_pixel);
+    world_to_pixels(-0.5f, y, &x_pixel, &y_pixel);
+    graph_draw_text(nombre, x_pixel, y_pixel);
   }
 }
 
