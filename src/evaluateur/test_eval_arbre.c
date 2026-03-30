@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <math.h>
+#include "jeton.h"
 #include "eval.h"
 
 // Petite fonction maison pour créer un nœud rapidement et proprement
