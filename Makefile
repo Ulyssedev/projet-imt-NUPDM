@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
-LDFLAGS = -lGL -lGLU -lglut
+LDFLAGS = -lGL -lGLU -lglut -lm
 
 PROJECT_NAME = projet-imt
 
