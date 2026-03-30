@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include "jeton.h"
 #include "eval.h"
 
 /* ================================================================
