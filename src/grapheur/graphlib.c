@@ -254,25 +254,6 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
   glEnd();
 }
 
-void red_axes_cursor(int mouse_x, int mouse_y) {
-  float wx, wy;
-
-  /* Convert from pixels to world coordinates */
-  pixels_to_world(mouse_x, mouse_y, &wx, &wy);
-
-  graph_apply_view();
-  glLineWidth(1.5f);
-  glColor3f(1.0f, 0.0f, 0.0f);
-  glBegin(GL_LINES);
-
-  glVertex2f(wx, gy_min);
-  glVertex2f(wx, gy_max);
-
-  glVertex2f(gx_min, wy);
-  glVertex2f(gx_max, wy);
-
-  glEnd();
-}
 /*Len charactere chain*/
 int strlen(char s[]) {
     int i;

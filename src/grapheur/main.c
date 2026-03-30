@@ -16,13 +16,7 @@ void display() {
   graph_draw_numbers(1.0f, 1.0f);
   graph_draw_axes();
   graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
-
-  if (space_pressed == 1) {
-    int mouse_x, mouse_y;
-    GETMOUSEPOS(&mouse_x, &mouse_y);
-    red_axes_cursor(mouse_x, mouse_y);
-  }
-
+  
   /* Draw a small label in the top-left corner */
   graph_draw_text_top_left("sin");
 
