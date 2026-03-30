@@ -56,3 +56,5 @@ dkms.conf
 
 # Ignore all files in the build folder
 build/
+
+.vscode/
