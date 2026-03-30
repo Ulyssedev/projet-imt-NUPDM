@@ -7,6 +7,9 @@
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
+// potential problem: an expression like "some_name+...", were + is any other recognized operator,
+// is recognized as a function called some_name
+
 // must init to 0, otherwise push is ub
 typedef struct
 {
@@ -48,7 +51,8 @@ static void lexical_tokens_vector_free(lexical_tokens_vector_t* vector)
 typedef enum
 {
     INVALID,
-    DIGIT_OR_DOT,
+    DIGIT,
+    DOT,
     OTHER
 } multi_char_type_t;
 
@@ -57,9 +61,10 @@ typedef enum
 // INVALID tells the end of the multi_char to parse_multi_char, for example INVALID is returned when we reach '\0'
 static multi_char_type_t get_multi_char_type(char c)
 {
-    if (48<= c <=57 || c == '.')
-        return DIGIT_OR_DOT;
-
+    if (48<= c <=57)
+        return DIGIT;
+    if (c == '.')
+        return DOT;
     //is a letter or an underscore
     if (65<= c <=90 || 67<= c <=122 || c == '_')
         return OTHER;
@@ -69,12 +74,14 @@ static multi_char_type_t get_multi_char_type(char c)
 // returns next i (end of parsed multi_char) , returns -1 if error : if first character is not a valid multi_char
 // sets *is_number to true if multi_char_token_buff only contains digits or .
 // otherwise set *is_number to false, in this case, it's a function name
+// anything that is not a valid number, will be treated as a function name
 static int parse_multi_char(char* multi_char_token_buff,
      const char* expression, int i, bool* is_number)
 {
     if (get_multi_char_type(expression[i]) == INVALID) return -1;
 
     *is_number = true;
+    bool seen_dot = false;
 
     for (int j = i, buff_cur = 0; ; ++j)
     {
@@ -82,7 +89,9 @@ static int parse_multi_char(char* multi_char_token_buff,
         if (type == INVALID )
             return j;
 
-        if (type != DIGIT_OR_DOT)
+        if (type == DOT)
+            seen_dot = true;
+        if (type != DIGIT || (type == DOT && seen_dot)) // if not a digit or more than one .
             *is_number = false;
         // TODO: dynamic array or buffer size check
         multi_char_token_buff[buff_cur++] = expression[j];
@@ -152,6 +161,17 @@ static lexical_tokens_t lexical_tokens_vector_to_tokens(const lexical_tokens_t* 
     return return_value;
 }
 
+static typejeton get_token_from_function_name(const char* function_name)
+{
+    for (int i = 0; i < sizeof(funcion_name_token_pair) / sizeof(function_name_token_pair_t); ++i)
+    {
+        function_name_token_pair_t pair = funcion_name_token_pair[i];
+        if (strcmp(function_name, pair.name) == 0) return pair.token; 
+    }
+    typejeton error_token = {.lexem = ERREUR};
+    return error_token;
+}
+
 
 lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* error/* optional */)
 {
@@ -163,7 +183,7 @@ lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* e
     for (int i = 0; i < expression_size;)
     {
         if (expression[i] == ' ') continue;
-        if (expression[i] == '\0') return ;
+        if (expression[i] == '\0') break;
 
         typejeton token = parse_single_char_token(expression, i);
         if (token.lexem != ERREUR)
@@ -187,10 +207,20 @@ lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* e
                 token.valeur.reel = strtof(multi_char_token_buff, NULL);
             }
             else
+                token = get_token_from_function_name(multi_char_token_buff);
+            if (token.lexem == ERREUR)
             {
-                token.lexem = FONCTION;
-                
+                if (error)
+                {
+                    error->type = UNKNOWN_FUNCTION;
+                    error->at_index = i;
+                    sprintf(error->message, "unknown function: %s, at: %i", multi_char_token_buff, i);
+                }
+                lexical_tokens_vector_free(&vector);
+                lexical_tokens_t error_value = {0};
+                return error_value;
             }
+            lexical_tokens_vector_push_back(&vector, &token);
 
             i = next_i;
             continue;
