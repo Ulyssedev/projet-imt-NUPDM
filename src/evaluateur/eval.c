@@ -33,7 +33,7 @@ float Eval(Arbre A, float x){
             switch(A->jeton.valeur.operateur)
             {
                 case PLUS : return Eval(A->pjeton_preced,x) + Eval(A->pjeton_suiv,x); break;
-                case MOINS : return Eval(A->pjeton_preced,x) - Eval(A->pjeton_suiv,x); break;
+                case MOINS : return Eval(A->pjeton_preced,x) - Eval(A->pjeton_suiv,x); break;   
                 case FOIS : return Eval(A->pjeton_preced,x) * Eval(A->pjeton_suiv,x); break;
                 case DIV : return Eval(A->pjeton_preced,x) / Eval(A->pjeton_suiv,x); break;
                 case PUIS : 
