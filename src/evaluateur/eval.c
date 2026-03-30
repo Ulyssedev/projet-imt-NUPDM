@@ -123,7 +123,7 @@ float tan(float x){
     if (c == 0){ //ERREUR
     return x;
     }
-    return sin(x)/c
+    return sin(x)/c;
 }
 
 float exp(float x){
@@ -167,3 +167,4 @@ float sinc(float x){
     }
     return sin(x)/x;
 }
+
