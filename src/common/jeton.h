@@ -1,16 +1,17 @@
 // Définition des différents tokens utilisés lors du projet
 
-typedef enum {
+typedef enum
+{
+  ERREUR,
   REEL,
   OPERATEUR,
   FONCTION,
-  ERREUR,
   FIN,
   PAR_OUV,
   PAR_FEM,
   PAR_FERM,
   VARIABLE,
-  BAR_OUV,
+  BAR_OUV, // Wtf is this ?? codialement KB
   BAR_FERM,
   ABSOLU
 } typetoken;
@@ -30,18 +31,19 @@ typedef enum {
   SINC
 } typefonction;
 
-typedef enum {
-  DIVISER_PAR_ZERO,
-  FUN_NO_RECO,
-  VAR_NO_RECO,
-  ARG_MANQUANT
-} typeerreur;
+// possibly wrong place
+// typedef enum {
+//   DIVISER_PAR_ZERO,
+//   FUN_NO_RECO,
+//   VAR_NO_RECO,
+//   ARG_MANQUANT
+// } typeerreur;
 
 typedef union {
   float reel;
   typefonction fonction;
   typeoperateur operateur;
-  typeerreur erreur;
+  // typeerreur erreur;
 } typevaleur;
 
 typedef struct {
