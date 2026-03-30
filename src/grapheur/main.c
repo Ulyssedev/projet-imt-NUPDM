@@ -9,7 +9,9 @@ static int g_last_x = 0, g_last_y = 0;
 /** GLUT display callback: clear the buffer and render the scene. */
 void display() {
   glClear(GL_COLOR_BUFFER_BIT);
-  graph_draw_grid(.3f, .3f);
+  graph_draw_grid(1.0f, 1.0f);
+  graph_draw_grid_min_lines(1.0f, 1.0f);
+  graph_draw_numbers(1.0f, 1.0f);
   graph_draw_axes();
   graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
 
@@ -77,7 +79,7 @@ void mouse_motion(int x, int y) {
  * Enters the GLUT main loop and does not return under normal execution.
  */
 int main(int argc, char **argv) {
-  graph_init_window(&argc, argv, 1000, 700, "Calculatrice Graphique");
+  graph_init_window(&argc, argv, 1000, 700, "Calculatrice Graphique : GraphitXcalc");
   graph_set_background(0.05f, 0.05f, 0.05f);
   world_set_view(-10.0f, 10.0f, -6.0f, 6.0f);
 

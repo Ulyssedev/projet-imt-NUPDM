@@ -175,3 +175,53 @@ void graph_draw_text_top_left(const char *text) {
   int win_y = g_win_h - pad_y;
   graph_draw_text(text, pad_x, win_y);
 }
+
+
+/*Draw numbers of graduation of axis*/
+void graph_draw_numbers(float x_step, float y_step){
+  graph_apply_view();
+
+  float start_x = (int)floorf(gx_min / x_step) * x_step;
+  for (float x = start_x; x <= gx_max; x += x_step) {
+    char nombre = (char)x;
+    int x_pixel, y_pixel;
+    world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
+    graph_draw_text(nombre, x_pixel, y_pixel);
+  }
+
+  float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
+  for (float y = start_y; y <= gy_max; y += y_step) {
+    char nombre = (char)y;
+    int x_pixel, y_pixel;
+    world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
+    graph_draw_text(nombre, x_pixel, y_pixel);
+  }
+}
+
+
+
+
+/*Draw small lines to graduate axis*/
+void graph_draw_grid_min_lines(float x_step, float y_step) {
+  if (x_step <= 0.0f || y_step <= 0.0f)
+    return;
+
+  graph_apply_view();
+  glLineWidth(1.5f);
+  glColor3f(1.0f, 1.0f, 1.0f);
+  glBegin(GL_LINES);
+
+  float start_x = (int)floorf(gx_min / x_step) * x_step;
+  for (float x = start_x; x <= gx_max; x += x_step) {
+    glVertex2f(x, -0.1f);
+    glVertex2f(x, 0.1f);
+  }
+
+  float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
+  for (float y = start_y; y <= gy_max; y += y_step) {
+    glVertex2f(-0.1f, y);
+    glVertex2f(0.1f, y);
+  }
+
+  glEnd();
+}

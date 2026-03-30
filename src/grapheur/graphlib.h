@@ -89,4 +89,9 @@ void graph_draw_text(const char *text, int x, int y);
  */
 void graph_draw_text_top_left(const char *text);
 
+/*Draw small lines to graduate axis*/
+void graph_draw_grid_min_lines(float x_step, float y_step);
+
+void graph_draw_numbers(float x_step, float y_step);
+
 #endif // GRAPHLIB_H
