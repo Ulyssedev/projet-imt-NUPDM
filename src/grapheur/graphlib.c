@@ -183,20 +183,65 @@ void graph_draw_numbers(float x_step, float y_step) {
 
   float start_x = (int)floorf(gx_min / x_step) * x_step;
   for (float x = start_x; x <= gx_max; x += x_step) {
+<<<<<<< HEAD
     char buf[32];
     snprintf(buf, sizeof(buf), "%g", x);
     int x_pixel, y_pixel;
     world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
     graph_draw_text(buf, x_pixel, y_pixel);
+=======
+    if(x!=0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", x);
+      if(x>0){
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.1f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else{
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.38f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
+>>>>>>> 504fecf7057802d5050065aea9e3a8f48739af96
   }
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
   for (float y = start_y; y <= gy_max; y += y_step) {
+<<<<<<< HEAD
     char buf[32];
     snprintf(buf, sizeof(buf), "%g", -y);
     int x_pixel, y_pixel;
     world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
     graph_draw_text(buf, x_pixel, y_pixel);
+=======
+    if(y==0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", y);
+      int x_pixel, y_pixel;
+      world_to_pixels(-0.4f, -0.4f, &x_pixel, &y_pixel);
+      graph_draw_text(nombre, x_pixel, y_pixel);
+    }
+    else {
+      if(y>0){
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*(longeur-1), y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else {
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*longeur, y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
+>>>>>>> 504fecf7057802d5050065aea9e3a8f48739af96
   }
 }
 
@@ -225,6 +270,7 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
   glEnd();
 }
 
+<<<<<<< HEAD
 void red_axes_cursor(int mouse_x, int mouse_y) {
   float wx, wy;
 
@@ -244,3 +290,13 @@ void red_axes_cursor(int mouse_x, int mouse_y) {
 
   glEnd();
 }
+=======
+/*Len charactere chain*/
+int strlen(char s[]) {
+    int i;
+    i=0;
+    while(s[i]!='\0')
+        ++i;
+    return i;
+    }
+>>>>>>> 504fecf7057802d5050065aea9e3a8f48739af96
