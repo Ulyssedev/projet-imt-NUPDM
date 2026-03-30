@@ -3,9 +3,11 @@
 #define GRAPHLIB_H
 
 #include <GL/glut.h>
+#include <stdio.h>
 #include <GL/freeglut.h>
 #include "./utils/global.h"
 #include "./utils/pixels.h"
+#include "./utils/ndc.h"
 
 /** Simple 2D point in world coordinates. */
 typedef struct {
@@ -94,5 +96,7 @@ void graph_draw_text_top_left(const char *text);
 void graph_draw_grid_min_lines(float x_step, float y_step);
 
 void graph_draw_numbers(float x_step, float y_step);
+
+void red_axes_cursor(int mouse_x, int mouse_y);
 
 #endif // GRAPHLIB_H

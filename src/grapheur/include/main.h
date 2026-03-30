@@ -7,6 +7,7 @@
 
 #include "../../common/graph_config.h"
 #include "../graphlib.h"
+#include "../utils/ndc.h"
 #include "../utils/world.h"
 #include <GL/glut.h>
 #include <math.h>
