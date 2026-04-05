@@ -262,3 +262,35 @@ int strlen(char s[]) {
         ++i;
     return i;
     }
+
+
+/*Indicator coordonnes top right*/
+void graph_draw_coords_top_right(float x, float y){
+
+  graph_apply_view();
+  char text[100];
+  snprintf(text, sizeof(text), "x = %f, y = %f", x, y);
+
+  /* Padding from right and top in pixels */
+  const int pad_x = 751;
+  const int pad_y = 20; /* distance from top baseline */
+  /* Window origin for our helper is bottom-left, so convert top-left y. */
+  int win_y = g_win_h - pad_y;
+  graph_draw_text(text, pad_x, win_y);
+}
+
+/*Draw red lines from axis to point coords*/
+void graph_draw_coords_red_lines(float x, float y) {
+  graph_apply_view();
+  glLineWidth(1.5f);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glBegin(GL_LINES);
+
+  glVertex2f(x, 0.0f);
+  glVertex2f(x, y);
+
+  glVertex2f(0.0f, y);
+  glVertex2f(x, y);
+
+  glEnd();
+}

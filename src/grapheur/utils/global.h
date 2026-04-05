@@ -11,4 +11,10 @@ extern float gy_max;
 extern int g_win_w;
 extern int g_win_h;
 
+/*save coords ping pointed with mouse*/
+extern float saved_world_x;
+extern float saved_world_y;
+extern int show_coords;
+extern int draw_coords;
+
 #endif // GRAPHEUR_UTILS_CONST_H

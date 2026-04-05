@@ -16,6 +16,13 @@ void display() {
   graph_draw_numbers(1.0f, 1.0f);
   graph_draw_axes();
   graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
+
+  if (show_coords == 1) {
+    graph_draw_coords_top_right(saved_world_x, saved_world_y);
+  }
+  if (draw_coords == 1) {
+    graph_draw_coords_red_lines(saved_world_x, saved_world_y);
+  }
   
   /* Draw a small label in the top-left corner */
   graph_draw_text_top_left("sin");
@@ -23,7 +30,7 @@ void display() {
   glFlush();
 }
 
-/** GLUT reshape callback: update cached window size and viewport. */
+/** GLUT reshabpe callack: update cached window size and viewport. */
 void graph_reshape(int w, int h) {
   if (w <= 0 || h <= 0)
     return;
@@ -81,14 +88,16 @@ void mouse_motion(int x, int y) {
  */
 void keyboard_button(unsigned char key, int x, int y) {
   if (key == ' ') {
-    if (space_pressed == 1) {
-      space_pressed = 0;
-    } else {
-      space_pressed = 1;
-    }
+    pixels_to_world(x, y, &saved_world_x, &saved_world_y);
+    show_coords = 1;
+  }
+  if (key == 't') {
+    if (draw_coords == 0){draw_coords=1;}
+    else {draw_coords=0;}
   }
   glutPostRedisplay();
 }
+
 
 /** Program entry: initialize the window, set up data and register callbacks.
  * Enters the GLUT main loop and does not return under normal execution.

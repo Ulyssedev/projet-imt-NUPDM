@@ -100,4 +100,11 @@ void graph_draw_numbers(float x_step, float y_step);
 /*Len charactere chain*/
 int strlen(char s[]);
 
+/*Indicator coordonnes top right*/
+void graph_draw_coords_top_right(float x, float y);
+
+/*Draw red lines from axis to point coords*/
+void graph_draw_coords_red_lines(float x, float y);
+
+
 #endif // GRAPHLIB_H
