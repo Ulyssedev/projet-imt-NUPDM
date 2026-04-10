@@ -1,3 +1,4 @@
+#pragma once
 #include "../common/jeton.h"
 #include <stdint.h>
 
@@ -5,7 +6,7 @@
 // must be freed if capacity != 0 !!!
 typedef struct
 {
-    size_t size;
+    size_t size; // actual number of typjeton
     size_t capacity;
     typejeton* tokens;
 } lexical_tokens_vector_t;

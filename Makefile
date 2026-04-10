@@ -48,7 +48,7 @@ grapheur: $(GRAPHEUR_OBJS) $(COMON_OBJS)
 
 lexical: $(LEXICAL_OBJS) $(COMON_OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(LEXICAL_OBJS) $(COMON_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-lexical $(LDFLAGS)
+	$(CC) $(LEXICAL_OBJS) $(COMON_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-lexical
 
 dialogueur: $(DIALOGUEUR_OBJS) $(COMON_OBJS)
 	@mkdir -p $(BUILD_DIR)

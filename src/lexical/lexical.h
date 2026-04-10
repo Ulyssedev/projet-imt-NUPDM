@@ -1,3 +1,4 @@
+#pragma once
 #include "../common/jeton.h"
 #include "lexical_vector.h"
 #include <stddef.h>
@@ -13,9 +14,9 @@ typedef enum
 {
     UNKNOWN_FUNCTION,
     MALFORMED_FUNCTION,
-    MALFORMED_REEL,
+    MALFORMED_REAL,
     UNEXPECTED_CHARACTER,
-    EMPTY_EXPRESSIION
+    NULL_EXPRESSION
 } lexical_error_type_t;
 
 typedef struct
@@ -34,4 +35,11 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
 
 // convert a lexical_tokens_vector_t into a detailed string about its tokens
 // must be freed
-char * lexical_tokens_to_str(lexical_tokens_vector_t* tokens);
+//
+// output example :
+//  OPERATEUR: PLUS
+//  REEL : 3.4
+//  FONCTION : SIN
+//  VARIABLE
+//  PAR_OUV
+char * lexical_tokens_to_str(const lexical_tokens_vector_t* tokens);

@@ -8,7 +8,7 @@ typedef struct {
 } ContexteSyntaxe;
 
 static int est_parenthese_fermante(typetoken token) {
-  return token == PAR_FERM || token == PAR_FEM;
+  return token == PAR_FERM /*|| token == PAR_FEM */;
 }
 
 static typetoken token_courant(const ContexteSyntaxe *ctx) {

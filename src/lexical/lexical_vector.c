@@ -1,8 +1,10 @@
 #include "lexical_vector.h"
+#include <stdlib.h>
+#include <string.h>
 
 void lexical_tokens_vector_reserve(lexical_tokens_vector_t* const vector, size_t new_capacity)
 {
-    assertm(new_capacity >= vector->capacity, "new_capacity should be greater than old_capacity");
+    if (new_capacity <=  vector->capacity) return;
 
     typejeton* new_buffer = malloc(new_capacity * sizeof(typejeton));
 

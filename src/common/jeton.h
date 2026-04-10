@@ -1,3 +1,5 @@
+#pragma once
+
 // Définition des différents tokens utilisés lors du projet
 
 typedef enum
@@ -8,11 +10,11 @@ typedef enum
   FONCTION,
   FIN,
   PAR_OUV,
-  PAR_FEM,
+  //PAR_FEM,
   PAR_FERM,
   VARIABLE,
-  BAR_OUV, // Wtf is this ?? codialement KB
-  BAR_FERM,
+  //BAR_OUV,
+  //BAR_FERM,
   ABSOLU
 } typetoken;
 
