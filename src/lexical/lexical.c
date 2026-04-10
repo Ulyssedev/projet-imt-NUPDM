@@ -1,104 +1,14 @@
 #include "lexical.h"
-#include <string.h>
-#include <assert.h>
+#include "lexical_vector.h"
 #include <stdbool.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define assertm(exp, msg) assert(((void)msg, exp))
-
-// potential problem: an expression like "some_name+...", were + is any other recognized operator,
-// is recognized as a function called some_name
-
-// must init to 0, otherwise push is ub
-typedef struct
-{
-    size_t size;
-    size_t capacity;
-    typejeton* tokens;
-} lexical_tokens_vector_t;
-
-static void lexical_tokens_vector_reserve(lexical_tokens_vector_t* const vector, size_t new_capacity)
-{
-    assertm(new_capacity >= vector->capacity, "new_capacity should be greater than old_capacity");
-
-    typejeton* new_buffer = malloc(new_capacity * sizeof(typejeton));
-
-    if (vector->size > 0ULL)
-        memcpy(new_buffer, vector->tokens, vector->size * sizeof(typejeton));
-
-    vector->capacity = new_capacity;
-
-    free(vector->tokens);
-    vector->tokens = new_buffer;
-}
-
-static void lexical_tokens_vector_push_back(lexical_tokens_vector_t* const vector, const typejeton* jeton)
-{
-    if (vector->capacity - vector->size < 1ULL)
-        lexical_tokens_vector_reserve(vector, vector->capacity == 0 ? 2 : vector->capacity * 2);
-
-    vector->tokens[vector->size++] = *jeton;
-}
-
-static void lexical_tokens_vector_free(lexical_tokens_vector_t* vector)
-{
-    free(vector->tokens);
-}
-
-
-
-typedef enum
-{
-    INVALID,
-    DIGIT,
-    DOT,
-    OTHER
-} multi_char_type_t;
-
-// a multi char token designates a function (like sin) or a number (like 3.09834)
-// a multi char token can only be composed of characters whose mutli_char_type is not INVALID
-// INVALID tells the end of the multi_char to parse_multi_char, for example INVALID is returned when we reach '\0'
-static multi_char_type_t get_multi_char_type(char c)
-{
-    if (48<= c <=57)
-        return DIGIT;
-    if (c == '.')
-        return DOT;
-    //is a letter or an underscore
-    if (65<= c <=90 || 67<= c <=122 || c == '_')
-        return OTHER;
-
-    return INVALID;
-}
-// returns next i (end of parsed multi_char) , returns -1 if error : if first character is not a valid multi_char
-// sets *is_number to true if multi_char_token_buff only contains digits or .
-// otherwise set *is_number to false, in this case, it's a function name
-// anything that is not a valid number, will be treated as a function name
-static int parse_multi_char(char* multi_char_token_buff,
-     const char* expression, int i, bool* is_number)
-{
-    if (get_multi_char_type(expression[i]) == INVALID) return -1;
-
-    *is_number = true;
-    bool seen_dot = false;
-
-    for (int j = i, buff_cur = 0; ; ++j)
-    {
-        multi_char_type_t type = get_multi_char_type(expression[j]);
-        if (type == INVALID )
-            return j;
-
-        if (type == DOT)
-            seen_dot = true;
-        if (type != DIGIT || (type == DOT && seen_dot)) // if not a digit or more than one .
-            *is_number = false;
-        // TODO: dynamic array or buffer size check
-        multi_char_token_buff[buff_cur++] = expression[j];
-
-        
-    }
-}
+// idea: indicate location of error with ^
+// TODO: use size_t when possible
+// TODO: tests
+// TODO: avoid using strlen for for loop
 
 
 typedef struct 
@@ -106,7 +16,7 @@ typedef struct
     char character;
     typejeton token;
 } char_token_pair_t;
-static char_token_pair_t char_token_pairs[] = 
+static char_token_pair_t special_character_token_pairs[] = 
 {
     {'+', {.lexem = OPERATEUR, .valeur.operateur = PLUS}},
     {'-', {.lexem = OPERATEUR, .valeur.operateur = MOINS}},
@@ -115,8 +25,7 @@ static char_token_pair_t char_token_pairs[] =
     {'^', {.lexem = OPERATEUR, .valeur.operateur = PUIS}},
     {'(', {.lexem = PAR_OUV}},
     {')', {.lexem = PAR_FERM}},
-    {'|', {.lexem = ABSOLU}},
-    {'x', {.lexem = VARIABLE}}
+    {'|', {.lexem = ABSOLU}}
 };
 
 typedef struct 
@@ -124,7 +33,7 @@ typedef struct
     const char* name;
     typejeton token;
 } function_name_token_pair_t;
-static function_name_token_pair_t funcion_name_token_pair[] =
+static function_name_token_pair_t function_name_token_pairs[] =
 {
     {"abs", {.lexem = FONCTION, .valeur = ABS}},
     {"sin", {.lexem = FONCTION, .valeur = SIN}},
@@ -138,107 +47,276 @@ static function_name_token_pair_t funcion_name_token_pair[] =
     {"sinc", {.lexem = FONCTION, .valeur = SINC}}
 };
 
-// returns typejeton with typejeton::lexem set to ERREUR, if it's not a valid single char token, 
-// in this case, its either part of a multi_char token, or completely invalid
-static typejeton parse_single_char_token(const char* expression, int i)
-{
-    for (int j = 0; j < sizeof(char_token_pairs) / sizeof(char_token_pair_t); ++j)
-    {
-        char_token_pair_t pair = char_token_pairs[j];
-        if (expression[i] == pair.character)
-            return pair.token;
-    }
 
-    typejeton error_token = {.lexem = ERREUR};
-    return error_token;
+static bool is_alpha(char c)
+{
+    return 65 <= c <= 90;
 }
 
-static lexical_tokens_t lexical_tokens_vector_to_tokens(const lexical_tokens_t* vector)
+static bool is_numerical(char c)
 {
-    lexical_tokens_t return_value = {0};
-    return_value.size = vector->size;
-    return_value.tokens = vector->tokens;
-    return return_value;
+    return 48 <= c <= 57;
 }
 
-static typejeton get_token_from_function_name(const char* function_name)
+static bool is_alpha_numerical(char c)
 {
-    for (int i = 0; i < sizeof(funcion_name_token_pair) / sizeof(function_name_token_pair_t); ++i)
-    {
-        function_name_token_pair_t pair = funcion_name_token_pair[i];
-        if (strcmp(function_name, pair.name) == 0) return pair.token; 
-    }
-    typejeton error_token = {.lexem = ERREUR};
-    return error_token;
+    return is_alpha(c) || is_numerical(c);
 }
 
-
-lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* error/* optional */)
+static bool is_valid_function_char(char c)
 {
-    
-    size_t expression_size = strlen(expression);
+    return is_alpha_numerical(c) || c == '_';
+}
 
-    lexical_tokens_vector_t vector = {0};
+// compare a null terminated string (without including the null terminator), with a sequence of char of known size
+static bool are_str_and_char_buff_equal(const char* str, const char* buff, int buff_size)
+{
+    if (strlen(str) != buff_size) return false;
+    return memcmp(str, buff, buff_size) == 0;
+}
 
-    for (int i = 0; i < expression_size;)
+// must be freed
+static char* char_buff_to_null_terminated_string(const char* buff_start, int buff_size)
+{
+    char* null_terminated_string = malloc(buff_size + 1);
+    memcpy(null_terminated_string, buff_start, buff_size);
+    null_terminated_string[buff_size] = '\0';
+
+    return null_terminated_string;
+}
+
+//  returns 0 if error
+static int parse_reel_get_end(int begin_index, const char* expression, lexical_error_t* error)
+{
+    bool seen_dot = false;
+    int end = begin_index + 1; // we have the guarrantee that first character is a valid reel char, see lexical_parse_tokensv2, so skip the first char
+    for (;;++end)
     {
-        if (expression[i] == ' ') continue;
-        if (expression[i] == '\0') break;
-
-        typejeton token = parse_single_char_token(expression, i);
-        if (token.lexem != ERREUR)
+        char current_character = expression[end];
+        bool is_dot = expression[end] == '.';
+        bool first_dot = (is_dot && !seen_dot);
+        if (is_numerical(current_character) || first_dot)
         {
-            lexical_tokens_vector_push_back(&vector, &token);
-            ++i;
+            if (first_dot) seen_dot = true;
             continue;
         }
 
+        // not a valid reel char, try to detect if it's an error, or the end of the token
 
-        char multi_char_token_buff[MAX_MULTI_CHAR_SIZE] = {'\0'};
-        bool is_number = false;
-        int next_i = parse_multi_char(multi_char_token_buff, expression, i, &is_number);
-
-        if (next_i != -1)
+        if (is_valid_function_char(current_character))
         {
-            typejeton token = {0};
-            if (is_number)
-            {
-                token.lexem = REEL;
-                token.valeur.reel = strtof(multi_char_token_buff, NULL);
-            }
-            else
-                token = get_token_from_function_name(multi_char_token_buff);
-            if (token.lexem == ERREUR)
-            {
-                if (error)
-                {
-                    error->type = UNKNOWN_FUNCTION;
-                    error->at_index = i;
-                    sprintf(error->message, "unknown function: %s, at: %i", multi_char_token_buff, i);
-                }
-                lexical_tokens_vector_free(&vector);
-                lexical_tokens_t error_value = {0};
-                return error_value;
-            }
-            lexical_tokens_vector_push_back(&vector, &token);
-
-            i = next_i;
-            continue;
+            error->type = MALFORMED_REEL;
+            sprintf_s(error->message, ERROR_MESSAGE_SIZE, 
+                "Malfomed reel : at : %i, a reel can only contain digits or one . , got : %c instead", end, current_character);
+            return 0;
         }
 
-        // invalid character
-
-        if (error)
+        if (is_dot)
         {
-            error->type = INVALID_CHARACTER;
+            error->type = MALFORMED_FUNCTION;
+            sprintf_s(error->message, ERROR_MESSAGE_SIZE, "Malfomed reel : at : %i, a reel can only contain a single .", end);
+            return 0;
+        }
+
+        return end;
+    }
+}
+
+// returns lexem_size == 0 if error
+typedef struct 
+{
+    typejeton token;
+    size_t lexem_size;
+} typejeton_and_size_t;
+static typejeton_and_size_t parse_reel(int begin_index, const char* expression, lexical_error_t* error)
+{
+    typejeton_and_size_t error_rv = {0};
+
+    int end = parse_reel_get_end(begin_index, expression, error);
+    if (!end)
+        return error_rv;
+
+    const char* reel_begin = expression + begin_index;
+    int reel_size = end - begin_index;
+    char* null_terminated_reel_str = char_buff_to_null_terminated_string(reel_begin, reel_size);
+
+    float parsed_float = strtof(null_terminated_reel_str, NULL);
+
+    typejeton_and_size_t rv = {.lexem_size = reel_size, .token = {.lexem = REEL, .valeur = parsed_float}};
+
+    return rv;
+}
+
+static bool is_space_or_newline(char c)
+{
+    return c == ' ' || c == '\n';
+}
+
+typedef enum
+{
+    DETECT_END_ERROR,
+    DETECT_END_END,
+    DETECT_END_NOTEND
+} detect_end_result_t;
+
+// weird design, TODO: follow same structure as parse_reel
+static detect_end_result_t parse_function_detect_end(int possible_end_index, const char* expression, lexical_error_t* error)
+{
+    if (expression[possible_end_index] == '(')
+        return DETECT_END_END;
+
+    // if it's a space or a newline, then it's really the end of a function only if we have a succession of spaces/newlines that ends with a (
+    if (is_space_or_newline(expression[possible_end_index]))
+    {
+        int j = possible_end_index + 1;
+        while (is_space_or_newline(expression[j]))
+            ++j;
+
+        // expression[j] is now the character at the end of the succession of spaces/newlines
+        if (expression[j] == '(')
+            return DETECT_END_END;
+
+        error->type = MALFORMED_FUNCTION;
+        error->at_index = j;
+        sprintf_s(error->message, ERROR_MESSAGE_SIZE, 
+            "Malformed function : expected ( at : %i, got : %c instead, a function name must be followed by a (", 
+        j, expression[j]);
+
+        return DETECT_END_ERROR;
+    }
+
+    return DETECT_END_NOTEND;
+}
+
+static typejeton_and_size_t parse_function(int begin_index, const char* expression, lexical_error_t* error)
+{
+    typejeton_and_size_t error_rv = {0};
+
+    int function_name_end = begin_index;
+    for (int i = begin_index;; ++i)
+    {
+        function_name_end = i;
+
+        detect_end_result_t status = parse_function_detect_end(i, expression, error);
+        if (status == DETECT_END_END)
+            break;
+        if (status == DETECT_END_ERROR)
+            return error_rv;
+
+        // condition is also met when current character is \0
+        if (!is_valid_function_char(expression[i]))
+        {
             error->at_index = i;
-            sprintf(error->message, "invalid character: %c, at: %i", expression[i], i);
+            error->type = MALFORMED_FUNCTION;
+            sprintf_s(error->message, ERROR_MESSAGE_SIZE, 
+                "Malformed function : expected ( at %i, got %c instead, a function name must only contain alphanumerical characters or underscores and cannot contain spaces",
+            i, expression[i]);
+            return error_rv;
         }
-        lexical_tokens_vector_free(&vector);
-        lexical_tokens_t error_value = {0};
-        return error_value;
+    }
+
+    int function_name_size = function_name_end - begin_index;
+    const char* function_name_begin = expression + begin_index;
+
+    for (int i = 0; i < sizeof(function_name_token_pairs) / sizeof(function_name_token_pair_t); ++i)
+    {
+        function_name_token_pair_t pair = function_name_token_pairs[i];
+        if (are_str_and_char_buff_equal(pair.name, function_name_begin, function_name_size))
+        {
+            typejeton_and_size_t rv = {.lexem_size = function_name_size, .token = pair.token};
+            return rv;
+        }
     }
 
 
-    return lexical_tokens_vector_to_tokens(&vector);
+    error->at_index = begin_index;
+    error->type = UNKNOWN_FUNCTION;
+
+    char* null_terminated_function_name = char_buff_to_null_terminated_string(function_name_begin, function_name_size);
+    sprintf_s(error->message, ERROR_MESSAGE_SIZE, "Uknown function : %s, at index : %i,  recognized functions : %s", null_terminated_function_name, begin_index, "TODO");
+    free(null_terminated_function_name);
+
+    return error_rv;
+}
+
+static typejeton_and_size_t parse_special_char_token(int begin_index, const char* expression, lexical_error_t* error)
+{
+
+    char current_character = expression[begin_index];
+    for (int i = 0; i < sizeof(special_character_token_pairs) / sizeof(char_token_pair_t); ++i)
+    {
+        char_token_pair_t pair = special_character_token_pairs[i];
+        if (pair.character == current_character)
+        {
+            typejeton_and_size_t rv = {.lexem_size = 1, .token = pair.token};
+            return rv;
+        }
+    }
+
+    typejeton_and_size_t error_rv = {0};
+    error->at_index = begin_index;
+    error->type = UNEXPECTED_CHARACTER;
+    sprintf_s(error->message, ERROR_MESSAGE_SIZE, "Unexpected character : %c, at index : %i", current_character, begin_index);
+    return error_rv;
+}
+
+
+// returns lexem size or 0 if error
+static size_t parse
+(
+    lexical_tokens_vector_t* tokens, const char* expression, lexical_error_t* error, 
+    int i,
+    typejeton_and_size_t(*parser)(int begin_index, const char* expression, lexical_error_t* error)
+)
+{
+    typejeton_and_size_t token = parser(i, expression, error);
+
+    if (token.lexem_size)
+        lexical_tokens_vector_push_back(tokens, &token.token);
+
+    return token.lexem_size;
+}
+
+// TODO: remove newlines and spaces
+lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_error_t* error)
+{
+    lexical_tokens_vector_t error_lexical_tokens = {0};
+    lexical_tokens_vector_t tokens = {0};
+
+    for (size_t i = 0; i < strlen(expression);)
+    {
+        char current_character = expression[i];
+        if (is_space_or_newline(current_character)) continue;
+
+        if (is_numerical(current_character) || current_character == '.')
+        {
+            size_t lexem_size = parse(&tokens, i, expression, error, parse_reel);
+            if (!lexem_size) return error_lexical_tokens;
+            i+= lexem_size;
+            continue;
+        }
+
+        // no risk of overflow with expression[i+1] because worst case scenario it will be \0
+        if (current_character == 'x' && !is_valid_function_char(expression[i+1]) && expression[i+1] != '(')
+        {
+            typejeton token = {.lexem = VARIABLE};
+            lexical_tokens_vector_push_back(&tokens, &token);
+            i+=1;
+            continue;
+        }
+
+        if (is_valid_function_char(current_character))
+        {
+            size_t lexem_size = parse(&tokens, i, expression, error, parse_function);
+            if (!lexem_size) return error_lexical_tokens;
+            i+= lexem_size;
+            continue;
+        }
+
+        size_t lexem_size = parse(&tokens, i, expression, error, parse_special_char_token);
+        if (!lexem_size) return error_lexical_tokens;
+        i+= lexem_size;
+    }
+
+    return tokens;
 }

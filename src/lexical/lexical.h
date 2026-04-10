@@ -1,5 +1,8 @@
 #include "../common/jeton.h"
+#include "lexical_vector.h"
 #include <stddef.h>
+
+// BROKEN
 
 //defines the maximum size of a multi_char token like a function name or a number, including null terminator
 // a value of 256 means a function name / number can't be longer than 255 characters
@@ -9,9 +12,12 @@
 typedef enum
 {
     UNKNOWN_FUNCTION,
-    INVALID_CHARACTER,
-    TOKEN_TOO_LONG
+    MALFORMED_FUNCTION,
+    MALFORMED_REEL,
+    UNEXPECTED_CHARACTER,
+    EMPTY_EXPRESSIION
 } lexical_error_type_t;
+
 typedef struct
 {
     lexical_error_type_t type;
@@ -20,16 +26,12 @@ typedef struct
 } lexical_error_t;
 
 
-typedef struct
-{
-    size_t size;
-    typejeton* tokens;
-} lexical_tokens_t;
-
-// puissance : ^
 //sin(x*abs(x))+2
-
-// in case of an error, lexical_tokens_t::tokens and lexical_tokens_t::size will be null
+// if error, lexical_tokens_vector_t::size is 0
+// lexical_tokens_vector_t must be freed with lexical_tokens_vector_free
 // expression must be null terminated ascii
-// lexical_tokens_t::tokens must be freed if not null
-lexical_tokens_t lexical_parse_tokens(const char* expression, lexical_error_t* error /* out optional, set to NULL if not used */);
+lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_error_t* error);
+
+// convert a lexical_tokens_vector_t into a detailed string about its tokens
+// must be freed
+char * lexical_tokens_to_str(lexical_tokens_vector_t* tokens);

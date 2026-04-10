@@ -2,7 +2,7 @@
 
 typedef enum
 {
-  ERREUR,
+  // ERREUR,
   REEL,
   OPERATEUR,
   FONCTION,
