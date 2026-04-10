@@ -23,7 +23,7 @@ int main()
         {.lexem = VARIABLE}
     };
 
-    lexical_tokens_vector_t tokens_vector = {.size = sizeof(tokens), .capacity = sizeof(tokens), .tokens = tokens};
+    lexical_tokens_vector_t tokens_vector = {.size = sizeof(tokens) / sizeof(typejeton), .capacity = sizeof(tokens) / sizeof(typejeton), .tokens = tokens};
 
     printf(lexical_tokens_to_str(&tokens_vector));
 }

@@ -184,7 +184,7 @@ char * lexical_tokens_to_str(const lexical_tokens_vector_t* tokens)
 
     char_vector_t char_vector = {0};
 
-    for (size_t i = 0; i < tokens-> size; ++i)
+    for (size_t i = 0; i < tokens->size; ++i)
     {
         typejeton current_token = tokens->tokens[i];
         char* typejeton_str = typejeton_to_string(current_token);
