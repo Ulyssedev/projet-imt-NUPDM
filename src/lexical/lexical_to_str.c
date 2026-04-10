@@ -41,7 +41,7 @@ static void push_char(char_vector_t* char_vector, char c)
 
 static void push_str(char_vector_t* char_vector, const char* str)
 {
-    for (int i = 0; str[i] != '\0'; ++i)
+    for (size_t i = 0; str[i] != '\0'; ++i)
         push_char(char_vector, str[i]);
 }
 
@@ -122,10 +122,11 @@ static char* get_str_value_for_typetoken(typetoken type, typevaleur valeur)
             return str_copy(typefonction_to_str(valeur.fonction));
         case REEL:
 
-            int required_size = snprintf(NULL, 0, "%f", valeur.reel) + 1;
+            size_t required_size = snprintf(NULL, 0, "%f", valeur.reel) + 1;
             char* buff = malloc(required_size);
             snprintf(buff, required_size, "%f", valeur.reel);
             return buff;
+        default:
     }
     return NULL;
 }
@@ -183,7 +184,7 @@ char * lexical_tokens_to_str(const lexical_tokens_vector_t* tokens)
 
     char_vector_t char_vector = {0};
 
-    for (int i = 0; i < tokens-> size; ++i)
+    for (size_t i = 0; i < tokens-> size; ++i)
     {
         typejeton current_token = tokens->tokens[i];
         char* typejeton_str = typejeton_to_string(current_token);

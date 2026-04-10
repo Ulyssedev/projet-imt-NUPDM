@@ -14,12 +14,12 @@
 
 static bool is_alpha(char c)
 {
-    return (65 <= c <= 90) || (97 <= c <= 122);
+    return (65 <= c && c <= 90) || (97 <= c && c <= 122);
 }
 
 static bool is_numerical(char c)
 {
-    return 48 <= c <= 57;
+    return 48 <= c && c <= 57;
 }
 
 static bool is_alpha_numerical(char c)
@@ -33,14 +33,14 @@ static bool is_valid_function_char(char c)
 }
 
 // compare a null terminated string (without including the null terminator), with a sequence of char of known size
-static bool are_str_and_char_buff_equal(const char* str, const char* buff, int buff_size)
+static bool are_str_and_char_buff_equal(const char* str, const char* buff, size_t buff_size)
 {
     if (strlen(str) != buff_size) return false;
     return memcmp(str, buff, buff_size) == 0;
 }
 
 // must be freed
-static char* char_buff_to_null_terminated_string(const char* buff_start, int buff_size)
+static char* char_buff_to_null_terminated_string(const char* buff_start, size_t buff_size)
 {
     char* null_terminated_string = malloc(buff_size + 1);
     memcpy(null_terminated_string, buff_start, buff_size);
@@ -50,10 +50,10 @@ static char* char_buff_to_null_terminated_string(const char* buff_start, int buf
 }
 
 //  returns 0 if error
-static int parse_real_get_end(int begin_index, const char* expression, lexical_error_t* error)
+static size_t parse_real_get_end(size_t begin_index, const char* expression, lexical_error_t* error)
 {
     bool seen_dot = false;
-    int end = begin_index + 1; // we have the guarrantee that first character is a valid real char, see lexical_parse_tokensv2, so skip the first char
+    size_t end = begin_index + 1; // we have the guarrantee that first character is a valid real char, see lexical_parse_tokensv2, so skip the first char
     for (;;++end)
     {
         char current_character = expression[end];
@@ -71,14 +71,14 @@ static int parse_real_get_end(int begin_index, const char* expression, lexical_e
         {
             error->type = MALFORMED_REAL;
             snprintf(error->message, ERROR_MESSAGE_SIZE, 
-                "Malfomed real : at : %i, a real can only contain digits or one . , got : %c instead", end, current_character);
+                "Malfomed real : at : %zu, a real can only contain digits or one . , got : %c instead", end, current_character);
             return 0;
         }
 
         if (is_dot)
         {
             error->type = MALFORMED_REAL;
-            snprintf(error->message, ERROR_MESSAGE_SIZE, "Malfomed real : at : %i, a real can only contain a single .", end);
+            snprintf(error->message, ERROR_MESSAGE_SIZE, "Malfomed real : at : %zu, a real can only contain a single .", end);
             return 0;
         }
 
@@ -92,16 +92,16 @@ typedef struct
     typejeton token;
     size_t lexem_size;
 } typejeton_and_size_t;
-static typejeton_and_size_t parse_real(int begin_index, const char* expression, lexical_error_t* error)
+static typejeton_and_size_t parse_real(size_t begin_index, const char* expression, lexical_error_t* error)
 {
     typejeton_and_size_t error_rv = {0};
 
-    int end = parse_real_get_end(begin_index, expression, error);
+    size_t end = parse_real_get_end(begin_index, expression, error);
     if (!end)
         return error_rv;
 
     const char* real_begin = expression + begin_index;
-    int real_size = end - begin_index;
+    size_t real_size = end - begin_index;
     char* null_terminated_real_str = char_buff_to_null_terminated_string(real_begin, real_size);
 
     float parsed_float = strtof(null_terminated_real_str, NULL);
@@ -126,7 +126,7 @@ typedef enum
 } detect_end_result_t;
 
 // weird design, TODO: follow same structure as parse_real
-static detect_end_result_t parse_function_detect_end(int possible_end_index, const char* expression, lexical_error_t* error)
+static detect_end_result_t parse_function_detect_end(size_t possible_end_index, const char* expression, lexical_error_t* error)
 {
     if (expression[possible_end_index] == '(')
         return DETECT_END_END;
@@ -134,7 +134,7 @@ static detect_end_result_t parse_function_detect_end(int possible_end_index, con
     // if it's a space or a newline, then it's really the end of a function only if we have a succession of spaces/newlines that ends with a (
     if (is_space_or_newline(expression[possible_end_index]))
     {
-        int j = possible_end_index + 1;
+        size_t j = possible_end_index + 1;
         while (is_space_or_newline(expression[j]))
             ++j;
 
@@ -145,7 +145,7 @@ static detect_end_result_t parse_function_detect_end(int possible_end_index, con
         error->type = MALFORMED_FUNCTION;
         error->at_index = j;
         snprintf(error->message, ERROR_MESSAGE_SIZE, 
-            "Malformed function : expected ( at : %i, got : %c instead, a function name must be followed by a (", 
+            "Malformed function : expected ( at : %zu, got : %c instead, a function name must be followed by a (", 
         j, expression[j]);
 
         return DETECT_END_ERROR;
@@ -154,7 +154,7 @@ static detect_end_result_t parse_function_detect_end(int possible_end_index, con
     return DETECT_END_NOTEND;
 }
 
-static typejeton_and_size_t parse_function(int begin_index, const char* expression, lexical_error_t* error)
+static typejeton_and_size_t parse_function(size_t begin_index, const char* expression, lexical_error_t* error)
 {
     typedef struct 
     {
@@ -177,8 +177,8 @@ static typejeton_and_size_t parse_function(int begin_index, const char* expressi
 
     typejeton_and_size_t error_rv = {0};
 
-    int function_name_end = begin_index;
-    for (int i = begin_index;; ++i)
+    size_t function_name_end = begin_index;
+    for (size_t i = begin_index;; ++i)
     {
         function_name_end = i;
 
@@ -194,16 +194,16 @@ static typejeton_and_size_t parse_function(int begin_index, const char* expressi
             error->at_index = i;
             error->type = MALFORMED_FUNCTION;
             snprintf(error->message, ERROR_MESSAGE_SIZE, 
-                "Malformed function : expected ( at %i, got %c instead, a function name must only contain alphanumerical characters or underscores and cannot contain spaces",
+                "Malformed function : expected ( at %zu, got %c instead, a function name must only contain alphanumerical characters or underscores and cannot contain spaces",
             i, expression[i]);
             return error_rv;
         }
     }
 
-    int function_name_size = function_name_end - begin_index;
+    size_t function_name_size = function_name_end - begin_index;
     const char* function_name_begin = expression + begin_index;
 
-    for (int i = 0; i < sizeof(function_name_token_pairs) / sizeof(function_name_token_pair_t); ++i)
+    for (size_t i = 0; i < sizeof(function_name_token_pairs) / sizeof(function_name_token_pair_t); ++i)
     {
         function_name_token_pair_t pair = function_name_token_pairs[i];
         if (are_str_and_char_buff_equal(pair.name, function_name_begin, function_name_size))
@@ -218,13 +218,13 @@ static typejeton_and_size_t parse_function(int begin_index, const char* expressi
     error->type = UNKNOWN_FUNCTION;
 
     char* null_terminated_function_name = char_buff_to_null_terminated_string(function_name_begin, function_name_size);
-    snprintf(error->message, ERROR_MESSAGE_SIZE, "Uknown function : %s, at index : %i,  recognized functions : %s", null_terminated_function_name, begin_index, "TODO");
+    snprintf(error->message, ERROR_MESSAGE_SIZE, "Uknown function : %s, at index : %zu,  recognized functions : %s", null_terminated_function_name, begin_index, "TODO");
     free(null_terminated_function_name);
 
     return error_rv;
 }
 
-static typejeton_and_size_t parse_special_char_token(int begin_index, const char* expression, lexical_error_t* error)
+static typejeton_and_size_t parse_special_char_token(size_t begin_index, const char* expression, lexical_error_t* error)
 {
     typedef struct 
     {
@@ -244,7 +244,7 @@ static typejeton_and_size_t parse_special_char_token(int begin_index, const char
     };
 
     char current_character = expression[begin_index];
-    for (int i = 0; i < sizeof(special_character_token_pairs) / sizeof(char_token_pair_t); ++i)
+    for (size_t i = 0; i < sizeof(special_character_token_pairs) / sizeof(char_token_pair_t); ++i)
     {
         char_token_pair_t pair = special_character_token_pairs[i];
         if (pair.character == current_character)
@@ -257,7 +257,7 @@ static typejeton_and_size_t parse_special_char_token(int begin_index, const char
     typejeton_and_size_t error_rv = {0};
     error->at_index = begin_index;
     error->type = UNEXPECTED_CHARACTER;
-    snprintf(error->message, ERROR_MESSAGE_SIZE, "Unexpected character : %c, at index : %i", current_character, begin_index);
+    snprintf(error->message, ERROR_MESSAGE_SIZE, "Unexpected character : %c, at index : %zu", current_character, begin_index);
     return error_rv;
 }
 
@@ -265,8 +265,8 @@ static typejeton_and_size_t parse_special_char_token(int begin_index, const char
 // returns lexem size or 0 if error
 static size_t parse
 (
-    lexical_tokens_vector_t* tokens, int i, const char* expression, lexical_error_t* error, 
-    typejeton_and_size_t(*parser)(int begin_index, const char* expression, lexical_error_t* error)
+    lexical_tokens_vector_t* tokens, size_t i, const char* expression, lexical_error_t* error, 
+    typejeton_and_size_t(*parser)(size_t begin_index, const char* expression, lexical_error_t* error)
 )
 {
     typejeton_and_size_t token = parser(i, expression, error);

@@ -22,7 +22,7 @@ typedef enum
 typedef struct
 {
     lexical_error_type_t type;
-    int at_index;
+    size_t at_index;
     char message[ERROR_MESSAGE_SIZE]; // null terminated
 } lexical_error_t;
 

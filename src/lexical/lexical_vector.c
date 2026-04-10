@@ -19,7 +19,7 @@ void lexical_tokens_vector_reserve(lexical_tokens_vector_t* const vector, size_t
 
 void lexical_tokens_vector_push_back(lexical_tokens_vector_t* const vector, const typejeton* jeton)
 {
-    if (vector->capacity - vector->size < 1ULL)
+    if (vector->size + 1 > vector->capacity)
         lexical_tokens_vector_reserve(vector, vector->capacity == 0 ? 2 : vector->capacity * 2);
 
     vector->tokens[vector->size++] = *jeton;

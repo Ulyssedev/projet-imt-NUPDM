@@ -3,7 +3,7 @@
 
 #include "lexical.h"
 
-int test_method()
+size_t test_method()
 {
     return 1;
 }
