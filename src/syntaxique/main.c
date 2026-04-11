@@ -1,5 +1,7 @@
 #include "syntaxique.h"
 
+#include <stdlib.h>
+
 typedef struct {
   const typejeton *entree;
   int index_entree;
@@ -102,10 +104,128 @@ int convertir_en_postfixe(typejeton entree[], typejeton sortie[]) {
   return SYNTAXE_OK;
 }
 
-// TODO: faire une vraie implémentation de cette fonction car c'est la syntaxe
-// qui s'en occupe ;( ;( ;(
+static void liberer_arbre_local(Arbre arbre) {
+  if (arbre == 0) {
+    return;
+  }
+
+  liberer_arbre_local(arbre->pjeton_preced);
+  liberer_arbre_local(arbre->pjeton_suiv);
+  free(arbre);
+}
+
 int convertir_code_postfixe_en_arbre(typejeton code_postfixe[], Arbre *arbre) {
-  (void)code_postfixe;
-  (void)arbre;
+  Arbre *pile;
+  int capacite = 0;
+  int sommet = -1;
+  int i = 0;
+  int j;
+
+  if (code_postfixe == 0 || arbre == 0) {
+    return SYNTAXE_ERREUR_ARGUMENT;
+  }
+
+  *arbre = 0;
+
+  while (code_postfixe[capacite].lexem != FIN) {
+    capacite++;
+  }
+
+  if (capacite == 0) {
+    return SYNTAXE_ERREUR_GRAMMAIRE;
+  }
+
+  pile = (Arbre *)malloc((size_t)capacite * sizeof(Arbre));
+  if (pile == 0) {
+    return SYNTAXE_ERREUR_ARGUMENT;
+  }
+
+  while (code_postfixe[i].lexem != FIN) {
+    typejeton courant = code_postfixe[i];
+    Arbre noeud = (Arbre)malloc(sizeof(Node));
+
+    if (noeud == 0) {
+      for (j = 0; j <= sommet; j++) {
+        liberer_arbre_local(pile[j]);
+      }
+      free(pile);
+      return SYNTAXE_ERREUR_ARGUMENT;
+    }
+
+    noeud->jeton = courant;
+    noeud->pjeton_preced = 0;
+    noeud->pjeton_suiv = 0;
+
+    if (courant.lexem == REEL || courant.lexem == VARIABLE) {
+      if (sommet + 1 >= capacite) {
+        free(noeud);
+        for (j = 0; j <= sommet; j++) {
+          liberer_arbre_local(pile[j]);
+        }
+        free(pile);
+        return SYNTAXE_ERREUR_GRAMMAIRE;
+      }
+
+      pile[++sommet] = noeud;
+      i++;
+      continue;
+    }
+
+    if (courant.lexem == FONCTION) {
+      if (sommet < 0) {
+        free(noeud);
+        for (j = 0; j <= sommet; j++) {
+          liberer_arbre_local(pile[j]);
+        }
+        free(pile);
+        return SYNTAXE_ERREUR_GRAMMAIRE;
+      }
+
+      noeud->pjeton_preced = pile[sommet--];
+      pile[++sommet] = noeud;
+      i++;
+      continue;
+    }
+
+    if (courant.lexem == OPERATEUR) {
+      Arbre droite;
+      Arbre gauche;
+
+      if (sommet < 1) {
+        free(noeud);
+        for (j = 0; j <= sommet; j++) {
+          liberer_arbre_local(pile[j]);
+        }
+        free(pile);
+        return SYNTAXE_ERREUR_GRAMMAIRE;
+      }
+
+      droite = pile[sommet--];
+      gauche = pile[sommet--];
+      noeud->pjeton_preced = gauche;
+      noeud->pjeton_suiv = droite;
+      pile[++sommet] = noeud;
+      i++;
+      continue;
+    }
+
+    free(noeud);
+    for (j = 0; j <= sommet; j++) {
+      liberer_arbre_local(pile[j]);
+    }
+    free(pile);
+    return SYNTAXE_ERREUR_GRAMMAIRE;
+  }
+
+  if (sommet != 0) {
+    for (j = 0; j <= sommet; j++) {
+      liberer_arbre_local(pile[j]);
+    }
+    free(pile);
+    return SYNTAXE_ERREUR_GRAMMAIRE;
+  }
+
+  *arbre = pile[0];
+  free(pile);
   return SYNTAXE_OK;
 }
