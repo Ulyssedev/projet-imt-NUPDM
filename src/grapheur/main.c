@@ -1,12 +1,50 @@
 #include "./include/main.h"
+#include "../dialogueur/pipeline.h"
 #include <GL/freeglut_std.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 static Point pts[NPOINTS];
+static char g_expression[256] = "sin(x)";
+static char g_status_message[PIPELINE_ERROR_MESSAGE_SIZE] = "";
+static float g_xmin = -10.0f;
+static float g_xmax = 10.0f;
 
 /* Interaction state for pan/zoom */
 static int g_dragging = 0;
 static int g_last_x = 0, g_last_y = 0;
 static int space_pressed = 0;
+
+static void remplir_points_depuis_expression(void) {
+  int i;
+  int nb_erreurs = 0;
+
+  g_status_message[0] = '\0';
+
+  for (i = 0; i < NPOINTS; ++i) {
+    float x = g_xmin + ((g_xmax - g_xmin) * i) / (NPOINTS - 1);
+    float y = 0.0f;
+    char erreur[PIPELINE_ERROR_MESSAGE_SIZE] = "";
+    int status = calculer_fx(g_expression, x, &y, erreur, sizeof(erreur));
+
+    pts[i].x = x;
+    if (status == PIPELINE_OK) {
+      pts[i].y = y;
+    } else {
+      pts[i].y = 0.0f;
+      nb_erreurs++;
+      if (g_status_message[0] == '\0') {
+        snprintf(g_status_message, sizeof(g_status_message),
+                 "Erreur calcul: %.480s", erreur);
+      }
+    }
+  }
+
+  if (nb_erreurs > 0 && g_status_message[0] == '\0') {
+    snprintf(g_status_message, sizeof(g_status_message),
+             "Erreur calcul sur %d points", nb_erreurs);
+  }
+}
 
 /** GLUT display callback: clear the buffer and render the scene. */
 void display() {
@@ -23,9 +61,12 @@ void display() {
   if (draw_coords == 1) {
     graph_draw_coords_red_lines(saved_world_x, saved_world_y);
   }
-  
-  /* Draw a small label in the top-left corner */
-  graph_draw_text_top_left("sin");
+
+  if (g_status_message[0] != '\0') {
+    graph_draw_text_top_left(g_status_message);
+  } else {
+    graph_draw_text_top_left(g_expression);
+  }
 
   glFlush();
 }
@@ -103,16 +144,24 @@ void keyboard_button(unsigned char key, int x, int y) {
  * Enters the GLUT main loop and does not return under normal execution.
  */
 int main(int argc, char **argv) {
+  if (argc >= 2) {
+    snprintf(g_expression, sizeof(g_expression), "%s", argv[1]);
+  }
+  if (argc >= 4) {
+    g_xmin = strtof(argv[2], NULL);
+    g_xmax = strtof(argv[3], NULL);
+    if (g_xmin >= g_xmax) {
+      g_xmin = -10.0f;
+      g_xmax = 10.0f;
+    }
+  }
+
+  remplir_points_depuis_expression();
+
   graph_init_window(&argc, argv, 1000, 700,
                     "Calculatrice Graphique : GraphitXcalc");
   graph_set_background(0.05f, 0.05f, 0.05f);
-  world_set_view(-10.0f, 10.0f, -6.0f, 6.0f);
-
-  for (int i = 0; i < NPOINTS; ++i) {
-    float x = -100.0f + (200.0f * i) / (NPOINTS - 1);
-    pts[i].x = x;
-    pts[i].y = sinf(x);
-  }
+  world_set_view(g_xmin, g_xmax, -6.0f, 6.0f);
   /* Register callbacks for interaction */
   glutDisplayFunc(display);
   glutReshapeFunc(graph_reshape);
