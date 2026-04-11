@@ -1,8 +1,13 @@
 #include "eval.h"
+#include <stddef.h>
 
 
 // Fonction récursive principale : elle parcourt l'arbre syntaxique (AST) pour calculer l'expression finale
 float Eval(Arbre A, float x){
+    if (A == NULL) {
+        return 0.0f;
+    }
+
     switch(A->jeton.lexem)
     {
         case REEL : 
@@ -25,6 +30,7 @@ float Eval(Arbre A, float x){
                 case ENTIER: return entier(Eval(A->pjeton_preced,x)); break;
                 case SINC : return sinc(Eval(A->pjeton_preced,x)); break;
                 case VAL_NEG : return val_neg(Eval(A->pjeton_preced,x)); break;
+                default: return 0.0f;
             }
         break; 
         case OPERATEUR :
@@ -38,7 +44,9 @@ float Eval(Arbre A, float x){
                 case PUIS : 
                     return pow(Eval(A->pjeton_preced,x), Eval(A->pjeton_suiv,x));
                 break;
+                default: return 0.0f;
             }
+        default: return 0.0f;
     }
 }
 

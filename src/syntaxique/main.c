@@ -101,6 +101,9 @@ int convertir_en_postfixe(typejeton entree[], typejeton sortie[]) {
     return SYNTAXE_ERREUR_FIN_MANQUANTE;
   }
 
+  ctx.sortie[ctx.index_sortie].lexem = FIN;
+  ctx.sortie[ctx.index_sortie].valeur.reel = 0.0f;
+
   return SYNTAXE_OK;
 }
 
