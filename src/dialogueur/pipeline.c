@@ -21,6 +21,25 @@ static void copier_message(char *destination, size_t taille_destination,
   snprintf(destination, taille_destination, "%s", message);
 }
 
+static const char *message_erreur_eval(eval_error_t erreur) {
+  switch (erreur) {
+  case EVAL_OK:
+    return "";
+  case EVAL_ERREUR_ARBRE_NULL:
+    return "arbre d'evaluation nul";
+  case EVAL_ERREUR_DIVISION_PAR_ZERO:
+    return "division par zero";
+  case EVAL_ERREUR_LOG_NON_POSITIF:
+    return "logarithme sur une valeur <= 0";
+  case EVAL_ERREUR_SQRT_NEGATIF:
+    return "racine carree d'une valeur negative";
+  case EVAL_ERREUR_NOEUD_INVALIDE:
+    return "noeud d'arbre invalide";
+  default:
+    return "erreur d'evaluation inconnue";
+  }
+}
+
 static void liberer_arbre_pipeline(Arbre arbre) {
   if (arbre == NULL) {
     return;
@@ -119,7 +138,17 @@ int calculer_fx(const char *expression, float x, float *out_resultat,
     return PIPELINE_ERREUR_SYNTAXIQUE;
   }
 
+  Eval_reset_error();
   *out_resultat = Eval(arbre, x);
+  if (Eval_get_error() != EVAL_OK) {
+    copier_message(message_erreur, taille_message_erreur,
+                   message_erreur_eval(Eval_get_error()));
+    liberer_arbre_pipeline(arbre);
+    free(postfixe);
+    free(entree);
+    lexical_tokens_vector_free(&tokens);
+    return PIPELINE_ERREUR_EVALUATION;
+  }
 
   liberer_arbre_pipeline(arbre);
   free(postfixe);

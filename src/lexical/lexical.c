@@ -299,7 +299,10 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
     for (size_t i = 0; i < strlen(expression);)
     {
         char current_character = expression[i];
-        if (is_space_or_newline(current_character)) continue;
+        if (is_space_or_newline(current_character)) {
+            i += 1;
+            continue;
+        }
 
         if (is_numerical(current_character) || current_character == '.')
         {
@@ -310,7 +313,8 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
         }
 
         // no risk of overflow with expression[i+1] because worst case scenario it will be \0
-        if (current_character == 'x' && !is_valid_function_char(expression[i+1]) && expression[i+1] != '(')
+        if ((current_character == 'x' || current_character == 'X') &&
+            !is_valid_function_char(expression[i+1]) && expression[i+1] != '(')
         {
             typejeton token = {.lexem = VARIABLE};
             lexical_tokens_vector_push_back(&tokens, &token);

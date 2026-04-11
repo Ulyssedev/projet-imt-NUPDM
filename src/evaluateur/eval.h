@@ -3,7 +3,18 @@
 #include <math.h>
 #define eval_h
 
+typedef enum {
+  EVAL_OK = 0,
+  EVAL_ERREUR_ARBRE_NULL = 1,
+  EVAL_ERREUR_DIVISION_PAR_ZERO = 2,
+  EVAL_ERREUR_LOG_NON_POSITIF = 3,
+  EVAL_ERREUR_SQRT_NEGATIF = 4,
+  EVAL_ERREUR_NOEUD_INVALIDE = 5
+} eval_error_t;
+
 float Eval(Arbre A, float x); 
+void Eval_reset_error(void);
+eval_error_t Eval_get_error(void);
 
 float my_cos(float x);
 float my_sin(float x);
