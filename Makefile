@@ -64,7 +64,7 @@ SYNTAXIQUE_OBJS = $(SYNTAXIQUE_SRCS:./%.c=$(BUILD_DIR)/%.o)
 COMON_SRCS = $(shell find $(COMON_DIR) -name '*.c')
 COMON_OBJS = $(COMON_SRCS:./%.c=$(BUILD_DIR)/%.o)
 
-all: $(BUILD_DIR)/$(PROJECT_NAME)
+all: project
 
 $(BUILD_DIR)/$(PROJECT_NAME): $(OBJS)
 	@mkdir -p $(BUILD_DIR)

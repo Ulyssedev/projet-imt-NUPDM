@@ -38,7 +38,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: projet-imt-project-linux
-          path: dist/projet-imt-linux.tar.gz
+          path: |
+            dist/projet-imt-linux
+            dist/lib/libglut.so.3.12
 
       - name: Upload to release assets
         if: github.event_name == 'release'
@@ -83,7 +85,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: projet-imt-project-windows
-          path: dist/projet-imt-windows.zip
+          path: |
+            dist/projet-imt-windows.exe
+            dist/libfreeglut.dll
+            dist/libgcc_s_seh-1.dll
+            dist/libwinpthread-1.dll
 
       - name: Upload to release assets
         if: github.event_name == 'release'

@@ -16,7 +16,7 @@ Ce dépôt contient le projet de programmation avancée de l'IMT Nord Europe, r�
 Arborescence principale :
 
 ```
-├── ReadMe.MD           # Rapports d'utilisation, maintenance et ReadMe (à séparer dans d'autres fichiers potentiellement)
+├── README.MD           # Rapports d'utilisation, maintenance et ReadMe (à séparer dans d'autres fichiers potentiellement)
 ├── include/            # Fichiers d'interface (.h) communs à tous les modules 
 ├── src/                # Code source (.c) réparti par binôme
 │   ├── dialogueur/     # Gestion de l'IHM et saisie utilisateur
@@ -30,10 +30,10 @@ Arborescence principale :
 
 ## Documentations par module
 
+- [Lexique](src/lexical/README.md)
 - [Syntaxique](src/syntaxique/README.md)
 - [Evaluateur](src/evaluateur/README.md)
 - [Grapheur](src/grapheur/README.md)
-- [Lexique](src/lexical/README.md)
 
 ## Binaires précompilés
 
@@ -61,47 +61,8 @@ Les exécutables sont placés dans le répertoire `build/`.
 - **Compilation complète (par défaut)** :
 
 ```bash
-make        # équivalent à `make all`
-# Sortie : build/projet-imt
-```
-
-- **Construire un sous-module spécifique** :
-
-Le `Makefile` définit des cibles par sous-groupe et chaque cible produit un binaire distinct dans `build/` :
-
-- **Grapheur** :
-
-```bash
-make grapheur
-# Sortie : build/projet-imt-grapheur
-```
-
-- **Lexical** :
-
-```bash
-make lexical
-# Sortie : build/projet-imt-lexical
-```
-
-- **Dialogueur** :
-
-```bash
-make dialogueur
-# Sortie : build/projet-imt-dialogueur
-```
-
-- **Evaluateur** :
-
-```bash
-make evaluateur
-# Sortie : build/projet-imt-evaluateur
-```
-
-- **Syntaxique** :
-
-```bash
-make syntaxique
-# Sortie : build/projet-imt-syntaxique
+make        # équivalent à `make all` et `make project`
+# Sortie : build/projet-imt-project
 ```
 
 - **Application finale chainee** :
@@ -132,14 +93,6 @@ Notes :
 Après compilation, lancez l'exécutable correspondant depuis la racine du dépôt, par exemple :
 
 ```bash
-./build/projet-imt-grapheur
-# ou
-./build/projet-imt
-```
-
-Pour l'application finale chainee :
-
-```bash
 ./build/projet-imt-project
 ```
 
@@ -162,3 +115,5 @@ Pour supprimer les fichiers de build :
 ```bash
 make clean
 ```
+
+*Nb: Durant le cycle de vie du projet, nous avons utilisé des builds par sous modules (ex: make grapheur, make lexical etc...) pour faciliter l'itération isolée et rapide avant de tout mettre en commun via la partie dialogeur.*
