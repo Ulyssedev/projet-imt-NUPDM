@@ -18,7 +18,6 @@ Node *creer_noeud(typetoken lexem, typevaleur val, Node *gauche, Node *droite) {
   return nouveau;
 }
 
-// Fonction pour liberer la memoire de l'arbre une fois qu'on a fini
 void liberer_arbre(Arbre A) {
   if (A == NULL)
     return;
