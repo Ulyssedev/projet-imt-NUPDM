@@ -12,6 +12,7 @@ LEXICAL_DIR = $(SRC_DIR)/lexical
 DIALOGUEUR_DIR = $(SRC_DIR)/dialogueur
 EVALUATEUR_DIR = $(SRC_DIR)/evaluateur
 SYNTAXIQUE_DIR = $(SRC_DIR)/syntaxique
+TESTS_DIR = ./tests
 
 PROJECT_SRCS = \
 	$(GRAPHEUR_DIR)/main.c \
@@ -27,6 +28,18 @@ PROJECT_SRCS = \
 	$(EVALUATEUR_DIR)/eval.c \
 	$(COMON_DIR)/main.c
 PROJECT_OBJS = $(PROJECT_SRCS:./%.c=$(BUILD_DIR)/%.o)
+
+TEST_SYNTAXIQUE_SRCS = \
+	$(TESTS_DIR)/test_syntaxique.c \
+	$(SYNTAXIQUE_DIR)/main.c \
+	$(COMON_DIR)/main.c
+TEST_SYNTAXIQUE_OBJS = $(TEST_SYNTAXIQUE_SRCS:./%.c=$(BUILD_DIR)/%.o)
+
+TEST_EVALUATEUR_SRCS = \
+	$(TESTS_DIR)/test_evaluateur.c \
+	$(EVALUATEUR_DIR)/eval.c \
+	$(COMON_DIR)/main.c
+TEST_EVALUATEUR_OBJS = $(TEST_EVALUATEUR_SRCS:./%.c=$(BUILD_DIR)/%.o)
 
 BUILD_DIR = ./build
 
@@ -81,6 +94,18 @@ project: $(PROJECT_OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(PROJECT_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-project $(LDFLAGS)
 
+test: $(BUILD_DIR)/test-syntaxique $(BUILD_DIR)/test-evaluateur
+	./$(BUILD_DIR)/test-syntaxique
+	./$(BUILD_DIR)/test-evaluateur
+
+$(BUILD_DIR)/test-syntaxique: $(TEST_SYNTAXIQUE_OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(TEST_SYNTAXIQUE_OBJS) -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/test-evaluateur: $(TEST_EVALUATEUR_OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(TEST_EVALUATEUR_OBJS) -o $@ $(LDFLAGS)
+
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -88,4 +113,4 @@ $(BUILD_DIR)/%.o: %.c
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all clean project
+.PHONY: all clean project test

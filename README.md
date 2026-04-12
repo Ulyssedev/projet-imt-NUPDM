@@ -105,6 +105,13 @@ make project
 # Sortie : build/projet-imt-project
 ```
 
+- **Lancer les tests** :
+
+```bash
+make test
+# Exécute : build/test-syntaxique et build/test-evaluateur
+```
+
 Cette cible compile le chainage utilisateur complet utile pour la demonstration:
 analyse lexicale -> analyse syntaxique -> generation/lecture du code postfixe ->
 evaluation -> affichage grapheur.

@@ -1,4 +1,4 @@
-#include "syntaxique.h"
+#include "../src/syntaxique/syntaxique.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +29,7 @@ static int jetons_egaux(typejeton a, typejeton b) {
   }
 }
 
-static int verifier_sortie(typejeton sortie[], typejeton attendu[],
-                           int taille) {
+static int verifier_sortie(typejeton sortie[], typejeton attendu[], int taille) {
   int i;
 
   for (i = 0; i < taille; i++) {
