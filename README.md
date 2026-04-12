@@ -37,7 +37,7 @@ Arborescence principale :
 
 ## Binaires précompilés
 
-Des binaires précompilés pour Windows et Linux sont disponibles dans la section *Releases* du Github.
+Des binaires précompilés pour Windows et Linux sont disponibles dans la section [Releases](https://github.com/Ulyssedev/projet-imt-NUPDM/releases/latest) du Github.
 
 ## Prérequis
 
