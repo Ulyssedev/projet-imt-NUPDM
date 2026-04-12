@@ -28,6 +28,13 @@ Arborescence principale :
 └── Makefile            # Automatisation de la compilation et édition des liens
 ```
 
+## Documentations par module
+
+- [Syntaxique](src/syntaxique/README.md)
+- [Evaluateur](src/evaluateur/README.md)
+- [Grapheur](src/grapheur/README.md)
+- [Lexique](src/lexical/README.md)
+
 ## Binaires précompilés
 
 Des binaires précompilés pour Windows et Linux sont disponibles dans la section *Releases* du Github.
