@@ -22,7 +22,7 @@ La struture de l'arbre impose un parcours de type post-fixé. On évalue d'abord
 
 Principe :
 
-Un `switch` principal traite le type de jeton (`REEL`, `JETON`, `FONCTION`, `OPERATEUR`). Puis pour le type d'opérateur et la fonction on utilise un autre `switch`. Pour les opérateurs, la fonction s'appelle récursivement sur les branches gauche (`pjeton_preced`) et droite (`pjeton_suiv`).
+Un `switch` principal traite le type de jeton (`REEL`, `VARIABLE`, `FONCTION`, `OPERATEUR`). Puis pour le type d'opérateur et la fonction on utilise un autre `switch`. Pour les opérateurs, la fonction s'appelle récursivement sur les branches gauche (`pjeton_preced`) et droite (`pjeton_suiv`).
 
 ### 2 : Implémentation des fonctions mathématiques
 
@@ -35,6 +35,10 @@ Réimplémentation des fonctions usuelles:
 - Logarithme : Approximation par développement en série avec 15 itérations pour un résultat précis
 
 - Définition mathématique : Utilisée pour `sinc` et `val_neg`
+
+### 3 : Calcul d'intégrales
+
+Utilisation de la méthode du trapèze afin de calculer des intégrales. N'est pas utilisable dans la fonction principale du projet.
 
 ## Gestion des erreurs 
 
@@ -55,7 +59,21 @@ Les erreurs détectées sont:
 
 ## Tests 
 
+Les tests sont centralisés dans `test_evaluateur.c` et valident la précision ainsi que la robustesse du code.
 
+Points couverts 
+
+- Calculs simples : Vérification d'expressions arithmétiques prioritaires (ex: 3 * x + 5).
+
+- Identités remarquables : Test de `cos(x)**2 + sin(x)**2` pour valider la précision des séries de Taylor.
+
+- Points critiques : Comportement de sinc(0) et détection des divisions par zéro.
+
+- Intégration numérique : Validation de la méthode des trapèzes sur des fonctions connues (linéaires et sinus).
+
+Méthode :
+
+Chaque test construit manuellement un arbre, exécute Eval, compare le résultat avec une tolérance de 10**-2 et libère la mémoire pour éviter les fuites.
 
 
 
