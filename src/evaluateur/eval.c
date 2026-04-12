@@ -200,3 +200,30 @@ float sinc(float x){
     }
     return my_sin(x)/x;
 }
+
+float my_integral(Arbre expression, float a, float b, int n) {
+    if (n <= 0 || expression == NULL) {
+        // Petite sécurité 
+        if (g_eval_error == EVAL_OK && expression == NULL) {
+            g_eval_error = EVAL_ERREUR_ARBRE_NULL;
+        }
+        return 0.0f; 
+    }
+
+    float h = (b - a) / n; // h est la largeur de chaque petit trapèze
+    
+    // Formule des trapèzes 
+    float f_a = Eval(expression, a);
+    float f_b = Eval(expression, b); // h * [ (f(a) + f(b))/2 + f(a+h) + f(a+2h) + ... ]
+    
+    float somme = (f_a + f_b) / 2.0f;
+
+    // On calcule les points intermédiaires
+    int i;
+    for (i = 1; i < n; i++) {
+        float x_actuel = a + i * h;
+        somme += Eval(expression, x_actuel);
+    }
+
+    return somme * h;
+}

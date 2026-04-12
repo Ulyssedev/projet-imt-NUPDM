@@ -26,7 +26,7 @@ float my_abs(float x);
 float entier(float x);
 float val_neg(float x);
 float sinc(float x);
-
+float my_integral(Arbre expression, float a, float b, int n);
 
 
 

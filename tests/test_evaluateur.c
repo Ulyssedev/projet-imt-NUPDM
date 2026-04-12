@@ -182,6 +182,184 @@ void test_exponentielle() {
   liberer_arbre(racine);
 }
 
+// Test 5 : Les fonctions limites (Tangente et Sinus Cardinal en zéro)
+// On teste ici un point critique : x = 0.
+void test_limites_zero() {
+  printf("\n--- Test 5 : Limites avec sinc(x) + tan(x) pour x = 0 ---\n");
+  Eval_reset_error();
+
+  typevaleur v_vide = {0};
+  Node *n_x1 = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+  Node *n_x2 = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+
+  // sinc(x)
+  typevaleur v_sinc = {.fonction = SINC};
+  Node *n_sinc = creer_noeud(FONCTION, v_sinc, n_x1, NULL);
+
+  // tan(x)
+  typevaleur v_tan = {.fonction = TAN};
+  Node *n_tan = creer_noeud(FONCTION, v_tan, n_x2, NULL);
+
+  // sinc(x) + tan(x)
+  typevaleur v_plus = {.operateur = PLUS};
+  Node *racine = creer_noeud(OPERATEUR, v_plus, n_sinc, n_tan);
+
+  // Lancement du calcul
+  float x_test = 0.0f;
+  float res = Eval(racine, x_test);
+
+  printf("Equation testee : sinc(x) + tan(x)\n");
+  printf("Resultat obtenu : %.2f\n", res);
+  // sinc(0) doit renvoyer 1.0 (ta condition spéciale), et tan(0) renvoie 0.0
+  printf("Resultat attendu: 1.00\n");
+
+  if (res == 1.0f && Eval_get_error() == EVAL_OK) {
+    printf(">> Test REUSSI ! La division par zero de sinc a bien ete evitee.\n");
+  } else {
+    printf(">> Probleme avec les limites en zero.\n");
+  }
+
+  liberer_arbre(racine);
+}
+
+// Test 6 : Racine carrée et Logarithme (sur des valeurs connues)
+void test_racine_et_log() {
+  printf("\n--- Test 6 : sqrt(x) et log(y) ---\n");
+  Eval_reset_error();
+
+  // On va utiliser le même noeud x pour tester deux arbres séparément
+  typevaleur v_vide = {0};
+  Node *n_x = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+
+  // Arbre 1 : sqrt(x)
+  typevaleur v_sqrt = {.fonction = SQRT};
+  Node *racine_sqrt = creer_noeud(FONCTION, v_sqrt, n_x, NULL);
+  float res_sqrt = Eval(racine_sqrt, 9.0f); // On s'attend à 3.0
+
+  // Arbre 2 : log(x)
+  typevaleur v_log = {.fonction = LOG};
+  Node *racine_log = creer_noeud(FONCTION, v_log, n_x, NULL);
+  float res_log = Eval(racine_log, 1.0f); // On s'attend à 0.0
+
+  printf("Test 1 -> sqrt(9) = %.2f (Attendu : 3.00)\n", res_sqrt);
+  printf("Test 2 -> log(1)  = %.2f (Attendu : 0.00)\n", res_log);
+
+  // Tolérance pour les floats, surtout pour Héron et Taylor
+  if (res_sqrt > 2.99f && res_sqrt < 3.01f && res_log > -0.01f && res_log < 0.01f) {
+    printf(">> Test REUSSI ! Héron et Taylor fonctionnent super bien.\n");
+  } else {
+    printf(">> Oups, verifie tes approximations.\n");
+  }
+
+  liberer_arbre(racine_sqrt);
+  liberer_arbre(racine_log);
+}
+
+// Test 7 : Les utilitaires (valeur absolue, negatif, entier)
+// On va imbriquer les trois : entier(abs(val_neg(x)))
+void test_utilitaires() {
+  printf("\n--- Test 7 : Imbrication ENTIER( ABS( VAL_NEG(x) ) ) ---\n");
+  Eval_reset_error();
+
+  typevaleur v_vide = {0};
+  Node *n_x = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+
+  // 1. val_neg(x)
+  typevaleur v_neg = {.fonction = VAL_NEG};
+  Node *n_neg = creer_noeud(FONCTION, v_neg, n_x, NULL);
+
+  // 2. abs(...)
+  typevaleur v_abs = {.fonction = ABS};
+  Node *n_abs = creer_noeud(FONCTION, v_abs, n_neg, NULL);
+
+  // 3. entier(...)
+  typevaleur v_ent = {.fonction = ENTIER};
+  Node *racine = creer_noeud(FONCTION, v_ent, n_abs, NULL);
+
+  // On teste avec 5.6
+  // val_neg(5.6) -> -5.6
+  // abs(-5.6) -> 5.6
+  // entier(5.6) -> 6.0 (arrondi au plus proche selon ta fonction)
+  float x_test = 5.6f;
+  float res = Eval(racine, x_test);
+
+  printf("Valeur de base  : %.2f\n", x_test);
+  printf("Resultat obtenu : %.2f\n", res);
+  printf("Resultat attendu: 6.00\n");
+
+  if (res == 6.0f && Eval_get_error() == EVAL_OK) {
+    printf(">> Test REUSSI ! L'imbrication des utilitaires marche nickel.\n");
+  } else {
+    printf(">> Probleme avec l'imbrication ou l'arrondi.\n");
+  }
+
+  liberer_arbre(racine);
+}
+
+// Test 8 : Intégrale numérique (méthode des trapèzes)
+void test_integration() {
+  printf("\n--- Test 8 : Integration numerique de f(x) = x entre 0 et 10 ---\n");
+  Eval_reset_error();
+
+  // 1. On crée l'arbre qui représente simplement "x"
+  typevaleur v_vide = {0};
+  Node *racine = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+
+  // 2. On lance l'intégration :
+  // On intègre 'racine' de a=0.0 à b=10.0, en découpant en n=1000 morceaux
+  float a = 0.0f;
+  float b = 10.0f;
+  int precision = 1000;
+  
+  float res = my_integral(racine, a, b, precision);
+
+  printf("Equation testee  : integrale(x)\n");
+  printf("Bornes           : [%.1f, %.1f]\n", a, b);
+  printf("Resultat obtenu  : %.2f\n", res);
+  printf("Resultat attendu : 50.00\n");
+
+  if (res > 49.9f && res < 50.1f && Eval_get_error() == EVAL_OK) {
+    printf(">> Test REUSSI ! La methode des trapezes est operationnelle.\n");
+  } else {
+    printf(">> Probleme avec le calcul de l'integrale.\n");
+  }
+
+  liberer_arbre(racine);
+}
+
+// Test 9 : Intégration de f(x) = sin(x) entre 0 et PI
+void test_integral_sinus() {
+  printf("\n--- Test 9 : Integration de sin(x) entre 0 et PI ---\n");
+  Eval_reset_error();
+
+  // 1. On crée l'arbre : sin(x)
+  typevaleur v_vide = {0};
+  Node *n_x = creer_noeud(VARIABLE, v_vide, NULL, NULL);
+  
+  typevaleur v_sin = {.fonction = SIN};
+  Node *racine = creer_noeud(FONCTION, v_sin, n_x, NULL);
+
+  // 2. Paramètres de l'intégrale
+  float a = 0.0f;
+  float b = 3.14159265f; // Approximativement PI
+  int n = 1000;          // Nombre de trapèzes
+  
+  float res = my_integral(racine, a, b, n);
+
+  printf("Equation testee  : integrale(sin(x))\n");
+  printf("Bornes           : [%.2f, %.2f]\n", a, b);
+  printf("Resultat obtenu  : %.5f\n", res);
+  printf("Resultat attendu : 2.00000\n");
+
+  // On vérifie si on est proche de 2.0
+  if (res > 1.99f && res < 2.01f && Eval_get_error() == EVAL_OK) {
+    printf(">> Test REUSSI ! L'integration du sinus est precise.\n");
+  } else {
+    printf(">> Probleme avec l'integrale du sinus (verifie ta constante PI ou ta fonction my_sin).\n");
+  }
+
+  liberer_arbre(racine);
+}
 
 // --- Le programme principal ---
 
@@ -193,6 +371,11 @@ int main(void) {
   test_division_par_zero();
   test_identite_trigo_extreme();
   test_exponentielle();
+  test_limites_zero();
+  test_racine_et_log();
+  test_utilitaires();
+  test_integration();
+  test_integral_sinus();
 
   printf("\n=== TOUS LES TESTS SONT TERMINES ===\n");
   return 0;
