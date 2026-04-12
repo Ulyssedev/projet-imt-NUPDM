@@ -3,6 +3,8 @@ name: Build project executable
 on:
   push:
   pull_request:
+  release:
+    types: [published]
 
 jobs:
   build-linux:
@@ -23,6 +25,12 @@ jobs:
         with:
           name: projet-imt-project-linux
           path: build/projet-imt-project
+
+      - name: Upload to release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/projet-imt-project
 
   build-windows:
     runs-on: windows-latest
@@ -50,3 +58,9 @@ jobs:
         with:
           name: projet-imt-project-windows
           path: build/projet-imt-project.exe
+
+      - name: Upload to release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/projet-imt-project.exe

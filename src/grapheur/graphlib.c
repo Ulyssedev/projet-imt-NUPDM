@@ -7,6 +7,14 @@ PFNGLWINDOWPOS2IPROC glWindowPos2i;
 
 static float bg_r = 0.0f, bg_g = 0.0f, bg_b = 0.0f;
 
+static int graph_strlen(const char *s) {
+  int i = 0;
+  while (s[i] != '\0') {
+    ++i;
+  }
+  return i;
+}
+
 /** Initialize a GLUT window and OpenGL context.
  * @param argc pointer to program argc forwarded to GLUT
  * @param argv program argv forwarded to GLUT
@@ -212,7 +220,7 @@ void graph_draw_numbers(float x_step, float y_step) {
       if(y>0){
         char nombre[32];
         snprintf(nombre, sizeof(nombre), "%g", y);
-        int longeur = strlen(nombre);
+        int longeur = graph_strlen(nombre);
         int x_pixel, y_pixel;
         world_to_pixels(-0.45f-0.1f*(longeur-1), y-0.1f, &x_pixel, &y_pixel);
         graph_draw_text(nombre, x_pixel, y_pixel);
@@ -220,7 +228,7 @@ void graph_draw_numbers(float x_step, float y_step) {
       else {
         char nombre[32];
         snprintf(nombre, sizeof(nombre), "%g", y);
-        int longeur = strlen(nombre);
+        int longeur = graph_strlen(nombre);
         int x_pixel, y_pixel;
         world_to_pixels(-0.45f-0.1f*longeur, y-0.1f, &x_pixel, &y_pixel);
         graph_draw_text(nombre, x_pixel, y_pixel);
@@ -253,16 +261,6 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
 
   glEnd();
 }
-
-/*Len charactere chain*/
-int strlen(char s[]) {
-    int i;
-    i=0;
-    while(s[i]!='\0')
-        ++i;
-    return i;
-    }
-
 
 /*Indicator coordonnes top right*/
 void graph_draw_coords_top_right(float x, float y){

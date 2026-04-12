@@ -97,9 +97,6 @@ void graph_draw_grid_min_lines(float x_step, float y_step);
 
 void graph_draw_numbers(float x_step, float y_step);
 
-/*Len charactere chain*/
-int strlen(char s[]);
-
 /*Indicator coordonnes top right*/
 void graph_draw_coords_top_right(float x, float y);
 
