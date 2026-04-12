@@ -29,6 +29,10 @@ Arborescence principale :
 └── Makefile            # Automatisation de la compilation et édition des liens
 ```
 
+## Binaires précompilés
+
+Des binaires précompilés pour Windows et Linux sont disponibles dans la section *Releases* du Github.
+
 ## Prérequis
 
 Installer les dépendances nécessaires pour la compilation et l'exécution (Ubuntu) :
@@ -94,7 +98,7 @@ make syntaxique
 # Sortie : build/projet-imt-syntaxique
 ```
 
-- **Application finale chainee (recommande pour le projet)** :
+- **Application finale chainee** :
 
 ```bash
 make project
