@@ -21,7 +21,7 @@ Arborescence principale :
 ├── src/                # Code source (.c) réparti par binôme
 │   ├── dialogueur/     # Gestion de l'IHM et saisie utilisateur
 │   ├── lexical/        # Analyseur lexical (lexèmes/jetons)
-│   ├── syntaxique/     # Analyseur syntaxique et génération de code
+│   ├── syntaxique/     # Analyseur syntaxique et génération de cod
 │   ├── evaluateur/     # Évaluateur et gestion de la pile 
 │   └── common/         # Structures de données partagées (ex: Couple lexème-valeur)
 ├── lib/                # Bibliothèques externes (graph.h, graph.c, OpenGL) 
