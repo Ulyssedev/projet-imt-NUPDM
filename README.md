@@ -94,6 +94,17 @@ make syntaxique
 # Sortie : build/projet-imt-syntaxique
 ```
 
+- **Application finale chainee (recommande pour le projet)** :
+
+```bash
+make project
+# Sortie : build/projet-imt-project
+```
+
+Cette cible compile le chainage utilisateur complet utile pour la demonstration:
+analyse lexicale -> analyse syntaxique -> generation/lecture du code postfixe ->
+evaluation -> affichage grapheur.
+
 Notes :
 
 - Les cibles compilent les sources du sous-dossier concerné + `src/common`.
@@ -107,6 +118,24 @@ Après compilation, lancez l'exécutable correspondant depuis la racine du dép�
 ./build/projet-imt-grapheur
 # ou
 ./build/projet-imt
+```
+
+Pour l'application finale chainee :
+
+```bash
+./build/projet-imt-project
+```
+
+Au lancement sans argument, le programme demande interactivement:
+- l'expression,
+- la borne inferieure,
+- la borne superieure,
+puis ouvre la fenetre grapheur avec la fonction demandee.
+
+Lancement non interactif possible (utile pour tests):
+
+```bash
+./build/projet-imt-project "sin(x)" -10 10
 ```
 
 ## Nettoyage

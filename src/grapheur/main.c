@@ -1,6 +1,7 @@
 #include "./include/main.h"
 #include "../dialogueur/pipeline.h"
 #include <GL/freeglut_std.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,7 +14,124 @@ static float g_xmax = 10.0f;
 /* Interaction state for pan/zoom */
 static int g_dragging = 0;
 static int g_last_x = 0, g_last_y = 0;
-static int space_pressed = 0;
+
+static void supprimer_retour_ligne(char *s) {
+  int i = 0;
+
+  if (s == NULL) {
+    return;
+  }
+
+  while (s[i] != '\0') {
+    if (s[i] == '\n') {
+      s[i] = '\0';
+      return;
+    }
+    i++;
+  }
+}
+
+static int ligne_vide(const char *s) {
+  int i = 0;
+
+  if (s == NULL) {
+    return 1;
+  }
+
+  while (s[i] != '\0') {
+    if (!isspace((unsigned char)s[i])) {
+      return 0;
+    }
+    i++;
+  }
+
+  return 1;
+}
+
+static int lire_flottant(const char *s, float *out) {
+  char *fin;
+  float valeur;
+
+  if (s == NULL || out == NULL) {
+    return 0;
+  }
+
+  valeur = strtof(s, &fin);
+  if (fin == s) {
+    return 0;
+  }
+
+  while (*fin != '\0') {
+    if (!isspace((unsigned char)*fin)) {
+      return 0;
+    }
+    fin++;
+  }
+
+  *out = valeur;
+  return 1;
+}
+
+static int initialiser_depuis_interaction(void) {
+  char expression[256];
+  char min_str[64];
+  char max_str[64];
+  char erreur[PIPELINE_ERROR_MESSAGE_SIZE];
+  float borne_min;
+  float borne_max;
+  float x_test;
+  float y_test;
+
+  for (;;) {
+    printf("Expression (ex: sin(x*abs(x))+2): ");
+    if (fgets(expression, sizeof(expression), stdin) == NULL) {
+      return 0;
+    }
+    supprimer_retour_ligne(expression);
+
+    if (ligne_vide(expression)) {
+      printf("Expression vide, recommencez.\n");
+      continue;
+    }
+
+    printf("Borne inferieure: ");
+    if (fgets(min_str, sizeof(min_str), stdin) == NULL) {
+      return 0;
+    }
+    supprimer_retour_ligne(min_str);
+    if (!lire_flottant(min_str, &borne_min)) {
+      printf("Borne inferieure invalide.\n");
+      continue;
+    }
+
+    printf("Borne superieure: ");
+    if (fgets(max_str, sizeof(max_str), stdin) == NULL) {
+      return 0;
+    }
+    supprimer_retour_ligne(max_str);
+    if (!lire_flottant(max_str, &borne_max)) {
+      printf("Borne superieure invalide.\n");
+      continue;
+    }
+
+    if (borne_min >= borne_max) {
+      printf("Intervalle invalide: la borne inferieure doit etre < a la borne superieure.\n");
+      continue;
+    }
+
+    x_test = (borne_min + borne_max) / 2.0f;
+    if (calculer_fx(expression, x_test, &y_test, erreur, sizeof(erreur)) !=
+        PIPELINE_OK) {
+      printf("Expression invalide: %s\n", erreur);
+      continue;
+    }
+
+    snprintf(g_expression, sizeof(g_expression), "%s", expression);
+    g_xmin = borne_min;
+    g_xmax = borne_max;
+    return 1;
+  }
+}
 
 static void remplir_points_depuis_expression(void) {
   int i;
@@ -154,6 +272,10 @@ int main(int argc, char **argv) {
       g_xmin = -10.0f;
       g_xmax = 10.0f;
     }
+  }
+
+  if (argc < 4 && !initialiser_depuis_interaction()) {
+    return 1;
   }
 
   remplir_points_depuis_expression();

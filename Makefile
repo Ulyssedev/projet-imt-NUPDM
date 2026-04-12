@@ -13,6 +13,21 @@ DIALOGUEUR_DIR = $(SRC_DIR)/dialogueur
 EVALUATEUR_DIR = $(SRC_DIR)/evaluateur
 SYNTAXIQUE_DIR = $(SRC_DIR)/syntaxique
 
+PROJECT_SRCS = \
+	$(GRAPHEUR_DIR)/main.c \
+	$(GRAPHEUR_DIR)/graphlib.c \
+	$(GRAPHEUR_DIR)/utils/global.c \
+	$(GRAPHEUR_DIR)/utils/ndc.c \
+	$(GRAPHEUR_DIR)/utils/pixels.c \
+	$(GRAPHEUR_DIR)/utils/world.c \
+	$(DIALOGUEUR_DIR)/pipeline.c \
+	$(LEXICAL_DIR)/lexical.c \
+	$(LEXICAL_DIR)/lexical_vector.c \
+	$(SYNTAXIQUE_DIR)/main.c \
+	$(EVALUATEUR_DIR)/eval.c \
+	$(COMON_DIR)/main.c
+PROJECT_OBJS = $(PROJECT_SRCS:./%.c=$(BUILD_DIR)/%.o)
+
 BUILD_DIR = ./build
 
 SRCS = $(shell find $(SRC_DIR) -name '*.c') ./*.c
@@ -62,6 +77,10 @@ syntaxique: $(SYNTAXIQUE_OBJS) $(COMON_OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(SYNTAXIQUE_OBJS) $(COMON_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-syntaxique $(LDFLAGS)
 
+project: $(PROJECT_OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(PROJECT_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-project $(LDFLAGS)
+
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -69,4 +88,4 @@ $(BUILD_DIR)/%.o: %.c
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: all clean
+.PHONY: all clean project
