@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential freeglut3-dev libglu1-mesa-dev libgl1-mesa-dev
+        run: sudo apt-get update && sudo apt-get install -y build-essential freeglut3-dev libglu1-mesa-dev libgl1-mesa-dev patchelf
 
       - name: Build final executable
         run: make project
@@ -26,17 +26,25 @@ jobs:
       - name: Run tests
         run: make test
 
+      - name: Package Linux bundle
+        run: |
+          mkdir -p dist/lib
+          cp build/projet-imt-project dist/projet-imt-linux
+          cp /usr/lib/x86_64-linux-gnu/libglut.so.3.12 dist/lib/
+          patchelf --set-rpath '$ORIGIN/lib' dist/projet-imt-linux
+          tar -czf dist/projet-imt-linux.tar.gz -C dist projet-imt-linux lib
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: projet-imt-project-linux
-          path: build/projet-imt-project
+          path: dist/projet-imt-linux.tar.gz
 
       - name: Upload to release assets
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: build/projet-imt-project
+          files: dist/projet-imt-linux.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -52,6 +60,7 @@ jobs:
           update: true
           install: >-
             make
+            zip
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-freeglut
 
@@ -59,14 +68,25 @@ jobs:
         shell: msys2 {0}
         run: make project LDFLAGS="-lopengl32 -lglu32 -lfreeglut -lm"
 
+      - name: Package Windows bundle
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+          cp build/projet-imt-project dist/projet-imt-windows.exe
+          cp /ucrt64/bin/libfreeglut.dll dist/
+          cp /ucrt64/bin/libgcc_s_seh-1.dll dist/
+          cp /ucrt64/bin/libwinpthread-1.dll dist/
+          cd dist
+          zip -9 projet-imt-windows.zip projet-imt-windows.exe libfreeglut.dll libgcc_s_seh-1.dll libwinpthread-1.dll
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: projet-imt-project-windows
-          path: build/projet-imt-project.exe
+          path: dist/projet-imt-windows.zip
 
       - name: Upload to release assets
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: build/projet-imt-project.exe
+          files: dist/projet-imt-windows.zip
