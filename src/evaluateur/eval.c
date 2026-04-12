@@ -98,9 +98,10 @@ float my_cos(float x){
 float my_sin(float x){
     int i;
     float res = x;
-    float terme = 1.0;
+    float terme = x; 
+    
     // Approximation de sin(x) via la série de Taylor
-    for (i=1;i<=10;i++){
+    for (i=1; i<=10; i++){
         terme *= -x * x / ((2*i) * (2*i+1));
         res += terme;
     }
@@ -119,10 +120,10 @@ float my_sqrt(float x){
     float estimation_prec = 0; 
     
     // Calcul de la racine carrée par la méthode de Héron 
-    while (estimation - estimation_prec > precision){
-        estimation_prec = estimation;
-        estimation = (estimation_prec + x/estimation_prec)/2.0;
-    }
+   while (my_abs(estimation - estimation_prec) > precision){
+    estimation_prec = estimation;
+    estimation = (estimation_prec + x/estimation_prec)/2.0;
+}
     return estimation;
 }
 
@@ -142,7 +143,7 @@ float my_log(float x){
         terme *= z*z;
         res += terme/(2*i+1);
     }
-    return res/2.0;
+    return res * 2.0; 
 }
 
 float my_tan(float x){
@@ -161,9 +162,9 @@ float my_exp(float x){
     float terme =1.0;
     float res= 1.0;
     // Approximation de e^x via la série de Taylor
-    for (i=1;i<=15;i++){
-        terme *= -x;
-        res += terme/(i+1);
+    for (i=1; i<=15; i++){
+        terme *= x / i; 
+        res += terme;
     }
     return res;
 }
