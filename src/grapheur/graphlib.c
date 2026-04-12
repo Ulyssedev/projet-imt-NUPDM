@@ -1,10 +1,17 @@
 #include "graphlib.h"
 #include "utils/world.h"
+#include <GL/gl.h>
 #include <math.h>
 
-PFNGLWINDOWPOS2IPROC glWindowPos2i;
-
 static float bg_r = 0.0f, bg_g = 0.0f, bg_b = 0.0f;
+
+static int graph_strlen(const char *s) {
+  int i = 0;
+  while (s[i] != '\0') {
+    ++i;
+  }
+  return i;
+}
 
 /** Initialize a GLUT window and OpenGL context.
  * @param argc pointer to program argc forwarded to GLUT
@@ -155,11 +162,24 @@ void graph_draw_text(const char *text, int x, int y) {
 
   glColor3f(1.0f, 1.0f, 1.0f);
 
-  glWindowPos2i = (PFNGLWINDOWPOS2IPROC)glutGetProcAddress("glWindowPos2i");
-  glWindowPos2i(x, y);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0.0, (double)g_win_w, 0.0, (double)g_win_h, -1.0, 1.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+
+  glRasterPos2i(x, y);
 
   for (const char *p = text; *p; ++p)
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, (int)*p);
+
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
 }
 
 /** Convenience: draw text anchored near the top-left of the window.
@@ -176,30 +196,57 @@ void graph_draw_text_top_left(const char *text) {
   graph_draw_text(text, pad_x, win_y);
 }
 
-
 /*Draw numbers of graduation of axis*/
-void graph_draw_numbers(float x_step, float y_step){
+void graph_draw_numbers(float x_step, float y_step) {
   graph_apply_view();
 
   float start_x = (int)floorf(gx_min / x_step) * x_step;
   for (float x = start_x; x <= gx_max; x += x_step) {
-    char nombre = (char)x;
-    int x_pixel, y_pixel;
-    world_to_pixels(x, -0.3f, &x_pixel, &y_pixel);
-    graph_draw_text(nombre, x_pixel, y_pixel);
+    if(x!=0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", x);
+      if(x>0){
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.1f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else{
+        int x_pixel, y_pixel;
+        world_to_pixels(x-0.38f, -0.45f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 
   float start_y = (float)((int)floorf(gy_min / y_step)) * y_step;
   for (float y = start_y; y <= gy_max; y += y_step) {
-    char nombre = (char)y;
-    int x_pixel, y_pixel;
-    world_to_pixels(-0.3f, y, &x_pixel, &y_pixel);
-    graph_draw_text(nombre, x_pixel, y_pixel);
+    if(y==0){
+      char nombre[32];
+      snprintf(nombre, sizeof(nombre), "%g", y);
+      int x_pixel, y_pixel;
+      world_to_pixels(-0.4f, -0.4f, &x_pixel, &y_pixel);
+      graph_draw_text(nombre, x_pixel, y_pixel);
+    }
+    else {
+      if(y>0){
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = graph_strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*(longeur-1), y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+      else {
+        char nombre[32];
+        snprintf(nombre, sizeof(nombre), "%g", y);
+        int longeur = graph_strlen(nombre);
+        int x_pixel, y_pixel;
+        world_to_pixels(-0.45f-0.1f*longeur, y-0.1f, &x_pixel, &y_pixel);
+        graph_draw_text(nombre, x_pixel, y_pixel);
+      }
+    }
   }
 }
-
-
-
 
 /*Draw small lines to graduate axis*/
 void graph_draw_grid_min_lines(float x_step, float y_step) {
@@ -222,6 +269,37 @@ void graph_draw_grid_min_lines(float x_step, float y_step) {
     glVertex2f(-0.1f, y);
     glVertex2f(0.1f, y);
   }
+
+  glEnd();
+}
+
+/*Indicator coordonnes top right*/
+void graph_draw_coords_top_right(float x, float y){
+
+  graph_apply_view();
+  char text[100];
+  snprintf(text, sizeof(text), "x = %f, y = %f", x, y);
+
+  /* Padding from right and top in pixels */
+  const int pad_x = 751;
+  const int pad_y = 20; /* distance from top baseline */
+  /* Window origin for our helper is bottom-left, so convert top-left y. */
+  int win_y = g_win_h - pad_y;
+  graph_draw_text(text, pad_x, win_y);
+}
+
+/*Draw red lines from axis to point coords*/
+void graph_draw_coords_red_lines(float x, float y) {
+  graph_apply_view();
+  glLineWidth(1.5f);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glBegin(GL_LINES);
+
+  glVertex2f(x, 0.0f);
+  glVertex2f(x, y);
+
+  glVertex2f(0.0f, y);
+  glVertex2f(x, y);
 
   glEnd();
 }

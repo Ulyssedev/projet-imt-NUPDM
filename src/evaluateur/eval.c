@@ -1,8 +1,22 @@
 #include "eval.h"
+#include <stddef.h>
+
+static eval_error_t g_eval_error = EVAL_OK;
+
+void Eval_reset_error(void) { g_eval_error = EVAL_OK; }
+
+eval_error_t Eval_get_error(void) { return g_eval_error; }
 
 
 // Fonction récursive principale : elle parcourt l'arbre syntaxique (AST) pour calculer l'expression finale
 float Eval(Arbre A, float x){
+    if (A == NULL) {
+        if (g_eval_error == EVAL_OK) {
+            g_eval_error = EVAL_ERREUR_ARBRE_NULL;
+        }
+        return 0.0f;
+    }
+
     switch(A->jeton.lexem)
     {
         case REEL : 
@@ -25,6 +39,11 @@ float Eval(Arbre A, float x){
                 case ENTIER: return entier(Eval(A->pjeton_preced,x)); break;
                 case SINC : return sinc(Eval(A->pjeton_preced,x)); break;
                 case VAL_NEG : return val_neg(Eval(A->pjeton_preced,x)); break;
+                default:
+                    if (g_eval_error == EVAL_OK) {
+                        g_eval_error = EVAL_ERREUR_NOEUD_INVALIDE;
+                    }
+                    return 0.0f;
             }
         break; 
         case OPERATEUR :
@@ -34,11 +53,31 @@ float Eval(Arbre A, float x){
                 case PLUS : return Eval(A->pjeton_preced,x) + Eval(A->pjeton_suiv,x); break;
                 case MOINS : return Eval(A->pjeton_preced,x) - Eval(A->pjeton_suiv,x); break;   
                 case FOIS : return Eval(A->pjeton_preced,x) * Eval(A->pjeton_suiv,x); break;
-                case DIV : return Eval(A->pjeton_preced,x) / Eval(A->pjeton_suiv,x); break;
+                case DIV : {
+                    float numerateur = Eval(A->pjeton_preced, x);
+                    float denominateur = Eval(A->pjeton_suiv, x);
+                    if (denominateur == 0.0f) {
+                        if (g_eval_error == EVAL_OK) {
+                            g_eval_error = EVAL_ERREUR_DIVISION_PAR_ZERO;
+                        }
+                        return 0.0f;
+                    }
+                    return numerateur / denominateur;
+                } break;
                 case PUIS : 
                     return pow(Eval(A->pjeton_preced,x), Eval(A->pjeton_suiv,x));
                 break;
+                default:
+                    if (g_eval_error == EVAL_OK) {
+                        g_eval_error = EVAL_ERREUR_NOEUD_INVALIDE;
+                    }
+                    return 0.0f;
             }
+        default:
+            if (g_eval_error == EVAL_OK) {
+                g_eval_error = EVAL_ERREUR_NOEUD_INVALIDE;
+            }
+            return 0.0f;
     }
 }
 
@@ -70,6 +109,9 @@ float my_sin(float x){
 
 float my_sqrt(float x){
     if (x<=0){
+        if (x < 0 && g_eval_error == EVAL_OK) {
+            g_eval_error = EVAL_ERREUR_SQRT_NEGATIF;
+        }
         return 0; // Sécurité de base
     }
     float precision = 0.00001;
@@ -85,8 +127,11 @@ float my_sqrt(float x){
 }
 
 float my_log(float x){
-    if (x<1){
-        return -1e38; // Valeur très basse pour simuler -l'infini en évitant le crash
+    if (x <= 0){
+        if (g_eval_error == EVAL_OK) {
+            g_eval_error = EVAL_ERREUR_LOG_NON_POSITIF;
+        }
+        return 0.0f;
     }
     // Approximation du logarithme
     float z = (x-1.0)/(x+1.0);

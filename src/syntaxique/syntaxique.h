@@ -11,5 +11,6 @@ enum {
 };
 
 int convertir_en_postfixe(typejeton entree[], typejeton sortie[]);
+int convertir_code_postfixe_en_arbre(typejeton code_postfixe[], Arbre *arbre);
 
 #endif

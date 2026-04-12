@@ -1,6 +1,7 @@
-#include "syntaxique.h"
+#include "../src/syntaxique/syntaxique.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
   const char *nom;
@@ -28,8 +29,7 @@ static int jetons_egaux(typejeton a, typejeton b) {
   }
 }
 
-static int verifier_sortie(typejeton sortie[], typejeton attendu[],
-                           int taille) {
+static int verifier_sortie(typejeton sortie[], typejeton attendu[], int taille) {
   int i;
 
   for (i = 0; i < taille; i++) {
@@ -62,6 +62,83 @@ static int executer_test(const TestCase *test) {
   }
 
   printf("[OK] %s\n", test->nom);
+  return 1;
+}
+
+static void liberer_arbre_test(Arbre arbre) {
+  if (arbre == NULL) {
+    return;
+  }
+
+  liberer_arbre_test(arbre->pjeton_preced);
+  liberer_arbre_test(arbre->pjeton_suiv);
+  free(arbre);
+}
+
+static int verifier_arbre_test(Arbre arbre) {
+  if (arbre == NULL) {
+    return 0;
+  }
+
+  if (arbre->jeton.lexem != OPERATEUR || arbre->jeton.valeur.operateur != PLUS) {
+    return 0;
+  }
+
+  if (arbre->pjeton_preced == NULL || arbre->pjeton_suiv == NULL) {
+    return 0;
+  }
+
+  if (arbre->pjeton_preced->jeton.lexem != OPERATEUR ||
+      arbre->pjeton_preced->jeton.valeur.operateur != FOIS) {
+    return 0;
+  }
+
+  if (arbre->pjeton_preced->pjeton_preced == NULL ||
+      arbre->pjeton_preced->pjeton_suiv == NULL) {
+    return 0;
+  }
+
+  if (arbre->pjeton_preced->pjeton_preced->jeton.lexem != REEL ||
+      arbre->pjeton_preced->pjeton_preced->jeton.valeur.reel != 3.0f) {
+    return 0;
+  }
+
+  if (arbre->pjeton_preced->pjeton_suiv->jeton.lexem != VARIABLE) {
+    return 0;
+  }
+
+  if (arbre->pjeton_suiv->jeton.lexem != REEL ||
+      arbre->pjeton_suiv->jeton.valeur.reel != 5.0f) {
+    return 0;
+  }
+
+  return 1;
+}
+
+static int executer_test_postfixe_vers_arbre(void) {
+  typejeton code_postfixe[] = {{REEL, {.reel = 3.0f}},
+                               {VARIABLE, {0}},
+                               {OPERATEUR, {.operateur = FOIS}},
+                               {REEL, {.reel = 5.0f}},
+                               {OPERATEUR, {.operateur = PLUS}},
+                               {FIN, {0}}};
+  Arbre arbre = NULL;
+  int retour = convertir_code_postfixe_en_arbre(code_postfixe, &arbre);
+
+  if (retour != SYNTAXE_OK) {
+    printf("[ECHEC] postfixe vers arbre: retour=%d attendu=%d\n", retour,
+           SYNTAXE_OK);
+    return 0;
+  }
+
+  if (!verifier_arbre_test(arbre)) {
+    printf("[ECHEC] postfixe vers arbre: structure d'arbre incorrecte\n");
+    liberer_arbre_test(arbre);
+    return 0;
+  }
+
+  liberer_arbre_test(arbre);
+  printf("[OK] postfixe vers arbre\n");
   return 1;
 }
 
@@ -108,6 +185,11 @@ int main(void) {
       nb_ok++;
     }
   }
+
+  if (executer_test_postfixe_vers_arbre()) {
+    nb_ok++;
+  }
+  nb_tests++;
 
   printf("\nResultat: %d/%d tests valides\n", nb_ok, nb_tests);
 
