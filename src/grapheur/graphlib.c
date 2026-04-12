@@ -3,8 +3,6 @@
 #include <GL/gl.h>
 #include <math.h>
 
-PFNGLWINDOWPOS2IPROC glWindowPos2i;
-
 static float bg_r = 0.0f, bg_g = 0.0f, bg_b = 0.0f;
 
 static int graph_strlen(const char *s) {
@@ -164,11 +162,24 @@ void graph_draw_text(const char *text, int x, int y) {
 
   glColor3f(1.0f, 1.0f, 1.0f);
 
-  glWindowPos2i = (PFNGLWINDOWPOS2IPROC)glutGetProcAddress("glWindowPos2i");
-  glWindowPos2i(x, y);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0.0, (double)g_win_w, 0.0, (double)g_win_h, -1.0, 1.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+
+  glRasterPos2i(x, y);
 
   for (const char *p = text; *p; ++p)
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, (int)*p);
+
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
 }
 
 /** Convenience: draw text anchored near the top-left of the window.
