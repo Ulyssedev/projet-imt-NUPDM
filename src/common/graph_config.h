@@ -6,4 +6,8 @@
 #define NPOINTS 10000
 #define EPSILON 1e-6f
 
+#define PALETTE_COUNT 6
+
+extern const float palette[PALETTE_COUNT][3];
+
 #endif // GLOBAL_CONFIG_H

@@ -6,6 +6,12 @@
  */
 float gx_min = -10.0f, gx_max = 10.0f, gy_min = -10.0f, gy_max = 10.0f;
 
+/* Bornes X utilisées pour le tracé des courbes quand le verrouillage est actif.
+ */
+float trace_gx_min = -10.0f;
+float trace_gx_max = 10.0f;
+int trace_x_locked = 0;
+
 /* Taille de la fenêtre en pixels (largeur, hauteur). */
 int g_win_w = 1, g_win_h = 1;
 

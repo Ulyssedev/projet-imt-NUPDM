@@ -1,9 +1,10 @@
-#pragma once
+#ifndef PIPELINE_H
+#define PIPELINE_H
 
-#include <stddef.h>
 #include "../evaluateur/eval.h"
 #include "../lexical/lexical.h"
 #include "../syntaxique/syntaxique.h"
+#include <stddef.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,3 +31,5 @@ int pipeline_build_arbre(const char *expression, Arbre *out_arbre,
 
 int calculer_fx(const char *expression, float x, float *out_resultat,
                 char *message_erreur, size_t taille_message_erreur);
+
+#endif // PIPELINE_H

@@ -1,9 +1,7 @@
-#include "../src/common/jeton.h"
-#include "../src/evaluateur/eval.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "test_evaluateur.h"
 
-// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque fois
+// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque
+// fois
 Node *creer_noeud(typetoken lexem, typevaleur val, Node *gauche, Node *droite) {
   Node *nouveau = (Node *)malloc(sizeof(Node));
   if (nouveau == NULL) {
@@ -218,8 +216,7 @@ void test_limites_zero() {
   printf("Resultat attendu: 1.00\n");
 
   if (res == 1.0f && Eval_get_error() == EVAL_OK) {
-    printf(
-        ">> Test REUSSI ! \n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Probleme avec les limites en zero.\n");
   }

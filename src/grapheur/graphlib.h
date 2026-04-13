@@ -89,6 +89,12 @@ void graph_reshape(int w, int h);
  */
 void graph_draw_text(const char *text, int x, int y);
 
+/**
+ * Dessine une chaîne de caractères bitmap en conservant la couleur OpenGL
+ * courante.
+ */
+void graph_draw_text_current_color(const char *text, int x, int y);
+
 /** Dessine du texte ancré près du coin supérieur gauche (padding fixe). */
 void graph_draw_text_top_left(const char *text);
 void graph_draw_text_top_right(const char *text);

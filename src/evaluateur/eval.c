@@ -1,5 +1,4 @@
 #include "eval.h"
-#include <stddef.h>
 
 static eval_error_t g_eval_error = EVAL_OK;
 

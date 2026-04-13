@@ -1,16 +1,10 @@
-#include "graphlib.h"
-#include "menu.h"
-#include "entry.h"
-#include "../evaluateur/eval.h"
-#include "../common/graph_config.h"
-
-#include <math.h>
+#include "main.h"
 
 static Point pts[NPOINTS];
 
 static void fill_default_sine(void) {
-  float x0 = gx_min;
-  float x1 = gx_max;
+  float x0 = trace_x_locked ? trace_gx_min : gx_min;
+  float x1 = trace_x_locked ? trace_gx_max : gx_max;
   float span = x1 - x0;
 
   if (NPOINTS <= 1) {
@@ -27,8 +21,8 @@ static void fill_default_sine(void) {
 }
 
 static void fill_function_points(Arbre root) {
-  float x0 = gx_min;
-  float x1 = gx_max;
+  float x0 = trace_x_locked ? trace_gx_min : gx_min;
+  float x1 = trace_x_locked ? trace_gx_max : gx_max;
   float span = x1 - x0;
 
   if (NPOINTS <= 1) {
@@ -57,17 +51,13 @@ void display(void) {
     fill_default_sine();
     graph_plot_lines(pts, NPOINTS, 0.1f, 0.9f, 0.2f, 2.0f);
   } else {
-    const float palette[][3] = {
-        {0.2f, 1.0f, 0.2f}, {1.0f, 1.0f, 0.0f}, {0.2f, 0.2f, 1.0f},
-        {1.0f, 0.6f, 0.2f},  {1.0f, 0.2f, 0.9f}, {0.2f, 1.0f, 0.9f}};
-
     for (int fi = 0; fi < count; ++fi) {
       Arbre root = menu_get_cached_arbre(fi);
       if (!root)
         continue;
 
       fill_function_points(root);
-      const float *col = palette[fi % (int)(sizeof(palette) / sizeof(palette[0]))];
+      const float *col = palette[fi % PALETTE_COUNT];
       graph_plot_lines(pts, NPOINTS, col[0], col[1], col[2], 2.0f);
     }
   }
@@ -110,9 +100,12 @@ static void idle_cb(void) {
 int main(int argc, char **argv) {
   (void)argv;
 
-  graph_init_window(&argc, argv, 1000, 700, "Calculatrice Graphique : GraphitXcalc");
+  graph_init_window(&argc, argv, 1000, 700,
+                    "Calculatrice Graphique : GraphitXcalc");
   graph_set_background(0.05f, 0.05f, 0.05f);
-  world_set_view(-10.0f, 10.0f, -6.0f, 6.0f);
+  world_set_view(-10.0f, 10.0f, -6.0f,
+                 6.0f); // 6 environ égal à 9/16*10 pour un rendu plus naturel
+                        // sur des écrans 16:9
 
   menu_init();
   entry_init();

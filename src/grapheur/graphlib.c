@@ -360,17 +360,13 @@ void graph_plot_lines(const Point *pts, int n, float r, float g, float b,
  *   compromis visuel pour couper les sauts trop grands.
  */
 
-/** Dessine une chaîne de texte bitmap aux coordonnées fenêtre (pixels).
- * L'origine est en bas à gauche.
- * @param text chaîne terminée par un zéro
- * @param x abscisse en pixels (depuis la gauche)
- * @param y ordonnée en pixels (depuis le bas)
- */
-void graph_draw_text(const char *text, int x, int y) {
+static void graph_draw_text_impl(const char *text, int x, int y,
+                                 int preserve_color) {
   if (!text)
     return;
 
-  glColor3f(1.0f, 1.0f, 1.0f);
+  if (!preserve_color)
+    glColor3f(1.0f, 1.0f, 1.0f);
 
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -393,6 +389,20 @@ void graph_draw_text(const char *text, int x, int y) {
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
+}
+
+/** Dessine une chaîne de texte bitmap aux coordonnées fenêtre (pixels).
+ * L'origine est en bas à gauche.
+ * @param text chaîne terminée par un zéro
+ * @param x abscisse en pixels (depuis la gauche)
+ * @param y ordonnée en pixels (depuis le bas)
+ */
+void graph_draw_text(const char *text, int x, int y) {
+  graph_draw_text_impl(text, x, y, 0);
+}
+
+void graph_draw_text_current_color(const char *text, int x, int y) {
+  graph_draw_text_impl(text, x, y, 1);
 }
 
 /*

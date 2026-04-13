@@ -43,9 +43,10 @@ void liberer_arbre_pipeline(Arbre arbre) {
   free(arbre);
 }
 
-static int lexical_vector_vers_tableau_entree(const lexical_tokens_vector_t *tokens,
-                                              typejeton **sortie_tableau,
-                                              size_t *sortie_taille) {
+static int
+lexical_vector_vers_tableau_entree(const lexical_tokens_vector_t *tokens,
+                                   typejeton **sortie_tableau,
+                                   size_t *sortie_taille) {
   typejeton *tableau;
   size_t i;
 
@@ -173,8 +174,9 @@ int calculer_fx(const char *expression, float x, float *out_resultat,
       copier_message(message_erreur, taille_message_erreur,
                      "erreur syntaxique pendant la construction de l'arbre");
     } else if (statut_pipeline == PIPELINE_ERREUR_MEMOIRE) {
-      copier_message(message_erreur, taille_message_erreur,
-                     "allocation impossible pendant la construction de l'arbre");
+      copier_message(
+          message_erreur, taille_message_erreur,
+          "allocation impossible pendant la construction de l'arbre");
     }
     return statut_pipeline;
   }

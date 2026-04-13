@@ -1,8 +1,4 @@
-#include "../src/lexical/lexical.h"
-#include "../src/lexical/lexical_vector.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "test_lexical.h"
 
 // ============================================================
 //  Petit programme de test pour l'analyseur lexical

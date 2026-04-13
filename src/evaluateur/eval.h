@@ -1,7 +1,9 @@
-#ifndef eval_h 
+#ifndef EVAL_H
+#define EVAL_H
+
 #include "../common/jeton.h"
 #include <math.h>
-#define eval_h
+#include <stddef.h>
 
 typedef enum {
   EVAL_OK = 0,
@@ -12,7 +14,7 @@ typedef enum {
   EVAL_ERREUR_NOEUD_INVALIDE = 5
 } eval_error_t;
 
-float Eval(Arbre A, float x); 
+float Eval(Arbre A, float x);
 void Eval_reset_error(void);
 eval_error_t Eval_get_error(void);
 
@@ -28,8 +30,4 @@ float val_neg(float x);
 float sinc(float x);
 float my_integral(Arbre expression, float a, float b, int n);
 
-
-
-
-
-#endif
+#endif // EVAL_H

@@ -3,6 +3,7 @@
 /* État d'interaction pour le pan/zoom */
 static int g_dragging = 0;
 static int g_last_x = 0, g_last_y = 0;
+static int g_follow_coords = 0;
 
 int menu_handle_key(unsigned char key, int x, int y) {
   (void)x;
@@ -25,6 +26,10 @@ int menu_handle_key(unsigned char key, int x, int y) {
         if (menu_edit_bounds_mode == 1) {
           gx_min = new_min1;
           gx_max = new_max1;
+          if (trace_x_locked) {
+            trace_gx_min = new_min1;
+            trace_gx_max = new_max1;
+          }
         } else {
           gy_min = new_min1;
           gy_max = new_max1;
@@ -47,7 +52,8 @@ int menu_handle_key(unsigned char key, int x, int y) {
       }
       return 1;
     }
-    if (isprint((unsigned char)key) && menu_bounds_input_pos + 1 < MENU_BOUNDS_INPUT_LEN) {
+    if (isprint((unsigned char)key) &&
+        menu_bounds_input_pos + 1 < MENU_BOUNDS_INPUT_LEN) {
       menu_bounds_input[menu_bounds_input_pos++] = key;
       menu_bounds_input[menu_bounds_input_pos] = '\0';
     }
@@ -140,9 +146,11 @@ int menu_handle_key(unsigned char key, int x, int y) {
     else
       menu_edit_bounds_mode = 2;
     if (menu_edit_bounds_mode == 1)
-      snprintf(menu_bounds_input, MENU_BOUNDS_INPUT_LEN, "%g %g", gx_min, gx_max);
+      snprintf(menu_bounds_input, MENU_BOUNDS_INPUT_LEN, "%g %g", gx_min,
+               gx_max);
     else
-      snprintf(menu_bounds_input, MENU_BOUNDS_INPUT_LEN, "%g %g", gy_min, gy_max);
+      snprintf(menu_bounds_input, MENU_BOUNDS_INPUT_LEN, "%g %g", gy_min,
+               gy_max);
     int n = (int)strlen(menu_bounds_input);
     if (n < 0)
       menu_bounds_input_pos = 0;
@@ -162,8 +170,16 @@ int menu_handle_key(unsigned char key, int x, int y) {
  * le point sous le curseur reste fixe pendant le déplacement.
  */
 void mouse_motion(int x, int y) {
+  if (g_follow_coords) {
+    pixels_to_world(x, y, &saved_world_x, &saved_world_y);
+    show_coords = 1;
+    draw_coords = 1;
+    glutPostRedisplay();
+  }
+
   if (!g_dragging)
     return;
+
   /* coordonnées world des positions précédente et courante du curseur */
   float wx_prev, wy_prev, wx_cur, wy_cur;
   pixels_to_world(g_last_x, g_last_y, &wx_prev, &wy_prev);
@@ -203,6 +219,17 @@ void mouse_button(int button, int state, int x, int y) {
     } else {
       g_dragging = 0;
     }
+  } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+    g_follow_coords = !g_follow_coords;
+    if (g_follow_coords) {
+      pixels_to_world(x, y, &saved_world_x, &saved_world_y);
+      show_coords = 1;
+      draw_coords = 1;
+    } else {
+      show_coords = 0;
+      draw_coords = 0;
+    }
+    glutPostRedisplay();
   }
 }
 
@@ -227,12 +254,20 @@ void keyboard_button(unsigned char key, int x, int y) {
       draw_coords = 0;
     }
   }
-  /* Zoom avant/arrière via clavier: '=' or '+' => zoom in, '-' or ')' => zoom out */
+  if (key == 'b' || key == 'B') {
+    trace_x_locked = !trace_x_locked;
+    if (trace_x_locked) {
+      trace_gx_min = gx_min;
+      trace_gx_max = gx_max;
+    }
+  }
+  /* Zoom avant/arrière via clavier: '=' or '+' => zoom in, '-' or ')' => zoom
+   * out */
   if (key == '=' || key == '+') {
-    world_zoom_at((gx_min + gx_max)/2, (gy_min + gy_max)/2, 1.2f);
+    world_zoom_at((gx_min + gx_max) / 2, (gy_min + gy_max) / 2, 1.2f);
   }
   if (key == '-' || key == ')') {
-    world_zoom_at((gx_min + gx_max)/2, (gy_min + gy_max)/2, 1.0f / 1.2f);
+    world_zoom_at((gx_min + gx_max) / 2, (gy_min + gy_max) / 2, 1.0f / 1.2f);
   }
   glutPostRedisplay();
 }

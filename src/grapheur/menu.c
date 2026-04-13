@@ -49,7 +49,226 @@ int menu_input_pos = 0;
 int menu_edit_bounds_mode = 0;
 char menu_bounds_input[MENU_BOUNDS_INPUT_LEN];
 int menu_bounds_input_pos = 0;
+static char menu_error_messages[MENU_MAX_FUNCS][256];
+static unsigned char menu_error_present[MENU_MAX_FUNCS];
 static const int menu_line_h = 20;
+
+static int menu_text_width(const char *text) {
+  int width = 0;
+
+  if (text == NULL)
+    return 0;
+
+  for (const char *p = text; *p; ++p) {
+    width += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, (int)*p);
+  }
+
+  return width;
+}
+
+/* Calcule le nombre de lignes nécessaires pour un texte découpé selon une
+ * largeur maximale en pixels. */
+static int menu_wrapped_line_count(const char *text, int max_width) {
+  const char *cursor;
+  int lines = 0;
+
+  if (text == NULL || max_width <= 0)
+    return 1;
+
+  cursor = text;
+  while (*cursor != '\0') {
+    char word[256];
+    int line_width = 0;
+    int has_content = 0;
+
+    while (*cursor == ' ')
+      cursor++;
+    if (*cursor == '\0')
+      break;
+
+    while (*cursor != '\0' && *cursor != '\n') {
+      const char *word_start = cursor;
+      size_t word_len;
+      int word_width;
+      int space_width;
+
+      while (*cursor != '\0' && *cursor != ' ' && *cursor != '\n')
+        cursor++;
+
+      word_len = (size_t)(cursor - word_start);
+      if (word_len == 0)
+        break;
+      if (word_len >= sizeof(word))
+        word_len = sizeof(word) - 1;
+
+      memcpy(word, word_start, word_len);
+      word[word_len] = '\0';
+      word_width = menu_text_width(word);
+      space_width = has_content ? menu_text_width(" ") : 0;
+
+      if (has_content && line_width + space_width + word_width > max_width) {
+        lines++;
+        line_width = 0;
+        has_content = 0;
+        space_width = 0;
+      }
+
+      if (has_content)
+        line_width += space_width;
+      line_width += word_width;
+      has_content = 1;
+
+      while (*cursor == ' ')
+        cursor++;
+      if (*cursor == '\n')
+        break;
+    }
+
+    if (has_content)
+      lines++;
+
+    while (*cursor == ' ' || *cursor == '\n')
+      cursor++;
+  }
+
+  return lines > 0 ? lines : 1;
+}
+
+/* Dessine un texte multi-lignes, en conservant la couleur OpenGL courante. */
+static int menu_draw_wrapped_text(const char *text, int x, int y,
+                                  int max_width) {
+  const char *cursor;
+  int lines_drawn = 0;
+
+  if (text == NULL || max_width <= 0) {
+    graph_draw_text_current_color("", x, y);
+    return 1;
+  }
+
+  cursor = text;
+  while (*cursor != '\0') {
+    char line[512];
+    int line_width = 0;
+    int has_content = 0;
+
+    while (*cursor == ' ')
+      cursor++;
+    if (*cursor == '\0')
+      break;
+
+    line[0] = '\0';
+    while (*cursor != '\0' && *cursor != '\n') {
+      const char *word_start = cursor;
+      size_t word_len;
+      char word[256];
+      int word_width;
+      int space_width;
+
+      while (*cursor != '\0' && *cursor != ' ' && *cursor != '\n')
+        cursor++;
+
+      word_len = (size_t)(cursor - word_start);
+      if (word_len == 0)
+        break;
+      if (word_len >= sizeof(word))
+        word_len = sizeof(word) - 1;
+
+      memcpy(word, word_start, word_len);
+      word[word_len] = '\0';
+      word_width = menu_text_width(word);
+      space_width = has_content ? menu_text_width(" ") : 0;
+
+      if (has_content && line_width + space_width + word_width > max_width) {
+        graph_draw_text_current_color(line, x, y - lines_drawn * menu_line_h);
+        lines_drawn++;
+        line[0] = '\0';
+        line_width = 0;
+        has_content = 0;
+        space_width = 0;
+      }
+
+      if (has_content) {
+        strncat(line, " ", sizeof(line) - strlen(line) - 1);
+        line_width += space_width;
+      }
+      strncat(line, word, sizeof(line) - strlen(line) - 1);
+      line_width += word_width;
+      has_content = 1;
+
+      while (*cursor == ' ')
+        cursor++;
+      if (*cursor == '\n')
+        break;
+    }
+
+    if (has_content) {
+      graph_draw_text_current_color(line, x, y - lines_drawn * menu_line_h);
+      lines_drawn++;
+    }
+
+    while (*cursor == ' ' || *cursor == '\n')
+      cursor++;
+  }
+
+  return lines_drawn > 0 ? lines_drawn : 1;
+}
+
+static void menu_clear_error_slot(int idx) {
+  if (idx < 0 || idx >= MENU_MAX_FUNCS)
+    return;
+  menu_error_present[idx] = 0;
+  menu_error_messages[idx][0] = '\0';
+}
+
+static void menu_clear_all_errors(void) {
+  for (int i = 0; i < MENU_MAX_FUNCS; ++i)
+    menu_clear_error_slot(i);
+}
+
+static void menu_set_pipeline_error_message(int idx, int pcode,
+                                            const lexical_error_t *lerr,
+                                            int syntax_err) {
+  const char *message = NULL;
+
+  if (idx < 0 || idx >= MENU_MAX_FUNCS)
+    return;
+
+  switch (pcode) {
+  case PIPELINE_ERREUR_LEXICALE:
+    if (lerr != NULL && lerr->message[0] != '\0') {
+      message = lerr->message;
+    } else {
+      message = "erreur lexicale";
+    }
+    break;
+  case PIPELINE_ERREUR_SYNTAXIQUE:
+    switch (syntax_err) {
+    case SYNTAXE_ERREUR_GRAMMAIRE:
+      message = "erreur syntaxique : grammaire invalide";
+      break;
+    case SYNTAXE_ERREUR_FIN_MANQUANTE:
+      message = "erreur syntaxique : fin manquante";
+      break;
+    default:
+      message = "erreur syntaxique";
+      break;
+    }
+    break;
+  case PIPELINE_ERREUR_MEMOIRE:
+    message = "allocation memoire impossible";
+    break;
+  case PIPELINE_ERREUR_ARGUMENT:
+    message = "expression invalide";
+    break;
+  default:
+    message = "erreur inconnue";
+    break;
+  }
+
+  menu_error_present[idx] = 1;
+  snprintf(menu_error_messages[idx], sizeof(menu_error_messages[idx]), "%s",
+           message);
+}
 
 void menu_init(void) {
   /* Reset tous les états. A appeler une seule fois dans le programme. */
@@ -66,8 +285,10 @@ void menu_init(void) {
   menu_bounds_input_pos = 0;
   menu_edit_bounds_mode = 0;
   menu_bounds_input[0] = '\0';
+  menu_clear_all_errors();
   glutMouseFunc(mouse_button);
   glutMotionFunc(mouse_motion);
+  glutPassiveMotionFunc(mouse_motion);
 }
 
 void menu_shutdown(void) {
@@ -123,8 +344,12 @@ int menu_add_function(const char *func_str) {
   lexical_error_t lerr = {0};
   int syntax_err = 0;
   int pcode = pipeline_build_arbre(funcs[rc], &root, &lerr, &syntax_err);
-  if (pcode == PIPELINE_OK)
+  if (pcode == PIPELINE_OK) {
     func_trees[rc] = root;
+    menu_clear_error_slot(rc);
+  } else {
+    menu_set_pipeline_error_message(rc, pcode, &lerr, syntax_err);
+  }
   func_count++;
   updated = 1;
   return rc;
@@ -149,8 +374,12 @@ int menu_edit_function(int idx, const char *func_str) {
   lexical_error_t lerr = {0};
   int syntax_err = 0;
   int pcode = pipeline_build_arbre(funcs[idx], &root, &lerr, &syntax_err);
-  if (pcode == PIPELINE_OK)
+  if (pcode == PIPELINE_OK) {
     func_trees[idx] = root;
+    menu_clear_error_slot(idx);
+  } else {
+    menu_set_pipeline_error_message(idx, pcode, &lerr, syntax_err);
+  }
   updated = 1;
   return idx;
 }
@@ -168,8 +397,13 @@ int menu_remove_function(int idx) {
   for (int i = idx; i + 1 < func_count; ++i) {
     strncpy(funcs[i], funcs[i + 1], MENU_MAX_FUNC_LEN);
     func_trees[i] = func_trees[i + 1];
+    menu_error_present[i] = menu_error_present[i + 1];
+    strncpy(menu_error_messages[i], menu_error_messages[i + 1],
+            sizeof(menu_error_messages[i]) - 1);
+    menu_error_messages[i][sizeof(menu_error_messages[i]) - 1] = '\0';
   }
   func_trees[func_count - 1] = NULL;
+  menu_clear_error_slot(func_count - 1);
   func_count--;
   if (menu_selected >= func_count)
     menu_selected = func_count > 0 ? func_count - 1 : 0;
@@ -199,8 +433,20 @@ void menu_draw_overlay(void) {
     return;
 
   const int pad = 10;
-  const int width = 650;
-  int lines = 4 + (func_count > 0 ? func_count : 0);
+  const int width = 750;
+  const int text_width = width - 48;
+  int error_lines = 0;
+  int footer_lines = (menu_editing || menu_edit_bounds_mode != 0) ? 1 : 0;
+  for (int i = 0; i < func_count; ++i) {
+    if (menu_error_present[i]) {
+      char error_line[320];
+      snprintf(error_line, sizeof(error_line), "Erreur [%d] : %s", i,
+               menu_error_messages[i]);
+      error_lines += menu_wrapped_line_count(error_line, text_width);
+    }
+  }
+  int lines =
+      8 + footer_lines + (func_count > 0 ? func_count : 0) + error_lines;
   int height = 40 + lines * menu_line_h;
   if (height > g_win_h - 2 * pad)
     height = g_win_h - 2 * pad;
@@ -270,25 +516,49 @@ void menu_draw_overlay(void) {
 
   /* Titre */
   graph_draw_text(
-      "GraphitX - Menu visuel (a:ajouter e:editer d:suppr m:masquer)", left + 8,
-      top - 22);
+      "GraphitXCalc - Menu visuel (a:ajouter e:editer d:suppr m:masquer)",
+      left + 8, top - 22);
+  graph_draw_text(
+      "(clic-droit:suivre espace:coos haut droite t:ligne rouge sur coos)",
+      left + 8, top - 22 - menu_line_h);
+  graph_draw_text("(haut/bas:selection t:ligne sur coos)", left + 8,
+                  top - 22 - 2 * menu_line_h);
+  graph_draw_text(
+      "Hors menu : haut/bas/gauche/droite:deplacement scroll/)/=:zoom",
+      left + 8, top - 22 - 3 * menu_line_h);
 
   /* Bornes de la vue (affichage + hint d'édition) */
+
+  char bounds_line[128];
+  snprintf(bounds_line, sizeof(bounds_line),
+           "Vue X: [%g, %g]  Y: [%g, %g]  (r:editer X, y:editer Y)", gx_min,
+           gx_max, gy_min, gy_max);
+  glColor3f(0.9f, 0.9f, 0.9f);
+  graph_draw_text(bounds_line, left + 12, top - 22 - 5 * menu_line_h);
+
   {
-    char bounds_line[128];
-    snprintf(bounds_line, sizeof(bounds_line), "View X: [%g, %g]  Y: [%g, %g]  (r:editer X, y:editer Y)",
-             gx_min, gx_max, gy_min, gy_max);
+    char trace_line[160];
+    if (trace_x_locked) {
+      snprintf(trace_line, sizeof(trace_line),
+               "Trace X: verrouillee sur [%g, %g] (b:debloquer)", trace_gx_min,
+               trace_gx_max);
+    } else {
+      snprintf(trace_line, sizeof(trace_line),
+               "Trace X: libre, suit la vue (b:verrouiller)");
+    }
     glColor3f(0.9f, 0.9f, 0.9f);
-    graph_draw_text(bounds_line, left + 12, top - 22 - menu_line_h);
+    graph_draw_text(trace_line, left + 12, top - 22 - 6 * menu_line_h);
   }
 
+  int y = top - 22 - 8 * menu_line_h;
+
   /* Liste des fonctions */
-  int y = top - 22 - 2 * menu_line_h;
   for (int i = 0; i < func_count; ++i) {
     if (y < bottom + 22)
       break; /* don't overflow */
-    char line[MENU_MAX_FUNC_LEN + 32];
-    snprintf(line, sizeof(line), "[%2d] %s", i, funcs[i]);
+    char index_label[16];
+    snprintf(index_label, sizeof(index_label), "[%2d]", i);
+    const float *col = palette[i % PALETTE_COUNT];
     if (i == menu_selected) {
       /* Met en surbrillance l'entrée sélectionnée : dessine un quad translucide
        * derrière le texte puis change la couleur du texte en jaune clair. Les
@@ -302,14 +572,35 @@ void menu_draw_overlay(void) {
       glVertex2f(right - 4, ly - menu_line_h + 9);
       glVertex2f(right - 4, ly + 9);
       glEnd();
-      /* dessine le texte sélectionné en couleur surlignée */
-      glColor3f(1.0f, 1.0f, 0.3f);
     } else {
-      /* Couleur normale (entrée non sélectionnée) */
       glColor3f(0.9f, 0.9f, 0.9f);
     }
-    graph_draw_text(line, left + 12, y - menu_line_h / 2);
+
+    /* Le numéro est coloré avec la palette partagée, le texte reste neutre. */
+    glColor3f(col[0], col[1], col[2]);
+    graph_draw_text_current_color(index_label, left + 12, y - menu_line_h / 2);
+
+    glColor3f(0.9f, 0.9f, 0.9f);
+    if (i == menu_selected)
+      glColor3f(1.0f, 1.0f, 0.3f);
+    graph_draw_text(funcs[i], left + 12 + menu_text_width(index_label) + 8,
+                    y - menu_line_h / 2);
     y -= menu_line_h;
+
+    if (menu_error_present[i]) {
+      if (y < bottom + 22)
+        break;
+      glColor3f(1.0f, 0.45f, 0.45f);
+      char error_line[320];
+      int wrapped_lines;
+      snprintf(error_line, sizeof(error_line), "Erreur [%d] : %s", i,
+               menu_error_messages[i]);
+      /* Une erreur longue peut occuper plusieurs lignes : on la découpe pour
+       * éviter qu'elle déborde sur les fonctions suivantes. */
+      wrapped_lines = menu_draw_wrapped_text(error_line, left + 24,
+                                             y - menu_line_h / 2, text_width);
+      y -= wrapped_lines * menu_line_h;
+    }
   }
 
   /* Zone de saisie / édition */
@@ -319,6 +610,8 @@ void menu_draw_overlay(void) {
       snprintf(prompt, sizeof(prompt), "Ajout: %s", menu_input);
     else
       snprintf(prompt, sizeof(prompt), "Edition: %s", menu_input);
+    /* On conserve une ligne de pied dédiée afin de ne jamais superposer la
+     * saisie avec la liste des fonctions. */
     glColor3f(0.8f, 0.8f, 0.8f);
     graph_draw_text(prompt, left + 12, bottom + 24);
   }
@@ -327,9 +620,11 @@ void menu_draw_overlay(void) {
   if (menu_edit_bounds_mode != 0) {
     char prompt[128];
     if (menu_edit_bounds_mode == 1)
-      snprintf(prompt, sizeof(prompt), "Edition borne X (min max): %s", menu_bounds_input);
+      snprintf(prompt, sizeof(prompt), "Edition borne X (min max): %s",
+               menu_bounds_input);
     else
-      snprintf(prompt, sizeof(prompt), "Edition borne Y (min max): %s", menu_bounds_input);
+      snprintf(prompt, sizeof(prompt), "Edition borne Y (min max): %s",
+               menu_bounds_input);
     glColor3f(0.8f, 0.8f, 0.8f);
     graph_draw_text(prompt, left + 12, bottom + 24);
   }

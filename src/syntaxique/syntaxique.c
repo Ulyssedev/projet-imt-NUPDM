@@ -1,7 +1,5 @@
 #include "syntaxique.h"
 
-#include <stdlib.h>
-
 typedef struct {
   const typejeton *entree;
   int index_entree;

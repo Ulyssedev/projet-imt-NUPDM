@@ -1,34 +1,38 @@
-#pragma once
+#ifndef LEXICAL_H
+#define LEXICAL_H
+
 #include "../common/jeton.h"
 #include "lexical_vector.h"
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define ERROR_MESSAGE_SIZE 512
 
-typedef enum
-{
-    NONE,
-    UNKNOWN_FUNCTION,
-    MALFORMED_FUNCTION,
-    MALFORMED_REAL,
-    UNEXPECTED_CHARACTER,
-    NULL_EXPRESSION,
-    NO_TOKENS
+typedef enum {
+  NONE,
+  UNKNOWN_FUNCTION,
+  MALFORMED_FUNCTION,
+  MALFORMED_REAL,
+  UNEXPECTED_CHARACTER,
+  NULL_EXPRESSION,
+  NO_TOKENS
 } lexical_error_type_t;
 
-typedef struct
-{
-    lexical_error_type_t type;
-    size_t at_index;
-    char message[ERROR_MESSAGE_SIZE]; // null terminated
+typedef struct {
+  lexical_error_type_t type;
+  size_t at_index;
+  char message[ERROR_MESSAGE_SIZE]; // null terminated
 } lexical_error_t;
 
-
-//sin(x*abs(x))+2
-// if error, lexical_tokens_vector_t::size is 0 and error->type != NONE
-// lexical_tokens_vector_t must be freed with lexical_tokens_vector_free
-// expression must be null terminated ascii
-lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_error_t* error);
+// sin(x*abs(x))+2
+//  if error, lexical_tokens_vector_t::size is 0 and error->type != NONE
+//  lexical_tokens_vector_t must be freed with lexical_tokens_vector_free
+//  expression must be null terminated ascii
+lexical_tokens_vector_t lexical_parse_tokens(const char *expression,
+                                             lexical_error_t *error);
 
 // convert a lexical_tokens_vector_t into a detailed string about its tokens
 // must be freed
@@ -39,4 +43,6 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
 //  FONCTION : SIN
 //  VARIABLE
 //  PAR_OUV
-char * lexical_tokens_to_str(const lexical_tokens_vector_t* tokens);
+char *lexical_tokens_to_str(const lexical_tokens_vector_t *tokens);
+
+#endif // LEXICAL_H

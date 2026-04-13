@@ -7,6 +7,12 @@ extern float gx_max;
 extern float gy_min;
 extern float gy_max;
 
+/** Bornes X utilisées pour le tracé des courbes quand elles sont verrouillées.
+ */
+extern float trace_gx_min;
+extern float trace_gx_max;
+extern int trace_x_locked;
+
 /** Dimensions de la fenêtre en pixels (largeur, hauteur) */
 extern int g_win_w;
 extern int g_win_h;

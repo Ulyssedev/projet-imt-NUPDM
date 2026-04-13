@@ -2,6 +2,7 @@
 #define SYNTAXIQUE_H
 
 #include "../common/jeton.h"
+#include <stdlib.h>
 
 enum {
   SYNTAXE_OK = 0,

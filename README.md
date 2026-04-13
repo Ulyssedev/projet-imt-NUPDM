@@ -33,6 +33,7 @@ Arborescence principale :
 - [Lexique](src/lexical/README.md)
 - [Syntaxique](src/syntaxique/README.md)
 - [Evaluateur](src/evaluateur/README.md)
+- [Dialogueur](src/dialogueur/README.md)
 - [Grapheur](src/grapheur/README.md)
 
 ## Binaires précompilés

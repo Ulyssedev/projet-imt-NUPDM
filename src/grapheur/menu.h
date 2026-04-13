@@ -1,8 +1,9 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "../evaluateur/eval.h"
+#include "../common/graph_config.h"
 #include "../dialogueur/pipeline.h"
+#include "../evaluateur/eval.h"
 #include "graphlib.h"
 #include "utils/global.h"
 #include <ctype.h>
