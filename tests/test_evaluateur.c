@@ -257,8 +257,8 @@ void test_racine_et_log() {
     printf(">> Oups, verifie tes approximations.\n");
   }
 
-  liberer_arbre(racine_sqrt);
-  liberer_arbre(racine_log);
+  // liberer_arbre(racine_sqrt);
+  // liberer_arbre(racine_log);
 }
 
 // Test 7 : Les utilitaires (valeur absolue, negatif, entier)
