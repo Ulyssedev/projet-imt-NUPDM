@@ -228,7 +228,7 @@ float sinc(float x) {
   return my_sin(x) / x;
 }
 
-float my_integral(Arbre expression, float a, float b, int n) {
+float my_integral(Arbre expression, float a, float b, int n) { //fonction intégrale ajouter en plus (pour le plaisir)
   if (n <= 0 || expression == NULL) {
     // Petite sécurité
     if (g_eval_error == EVAL_OK && expression == NULL) {
