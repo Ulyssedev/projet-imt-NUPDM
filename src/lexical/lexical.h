@@ -3,20 +3,17 @@
 #include "lexical_vector.h"
 #include <stddef.h>
 
-// BROKEN
-
-//defines the maximum size of a multi_char token like a function name or a number, including null terminator
-// a value of 256 means a function name / number can't be longer than 255 characters
-#define MAX_MULTI_CHAR_SIZE 256
 #define ERROR_MESSAGE_SIZE 512
 
 typedef enum
 {
+    NONE,
     UNKNOWN_FUNCTION,
     MALFORMED_FUNCTION,
     MALFORMED_REAL,
     UNEXPECTED_CHARACTER,
-    NULL_EXPRESSION
+    NULL_EXPRESSION,
+    NO_TOKENS
 } lexical_error_type_t;
 
 typedef struct
@@ -28,7 +25,7 @@ typedef struct
 
 
 //sin(x*abs(x))+2
-// if error, lexical_tokens_vector_t::size is 0
+// if error, lexical_tokens_vector_t::size is 0 and error->type != NONE
 // lexical_tokens_vector_t must be freed with lexical_tokens_vector_free
 // expression must be null terminated ascii
 lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_error_t* error);

@@ -6,11 +6,8 @@
 #include <stdlib.h>
 
 // idea: indicate location of error with ^
-// TODO: use size_t when possible
 // TODO: tests
-// TODO: avoid using strlen for for loop
-
-
+// TODO rename parse_function
 
 static bool is_alpha(char c)
 {
@@ -71,14 +68,16 @@ static size_t parse_real_get_end(size_t begin_index, const char* expression, lex
         {
             error->type = MALFORMED_REAL;
             snprintf(error->message, ERROR_MESSAGE_SIZE, 
-                "Malfomed real : at : %zu, a real can only contain digits or one . , got : %c instead", end, current_character);
+                "Malfomed real : at index: %zu, a real can only contain digits or one . , got : %c instead"
+                "\nFunction names can't start with a number"
+                , end, (current_character));
             return 0;
         }
 
         if (is_dot)
         {
             error->type = MALFORMED_REAL;
-            snprintf(error->message, ERROR_MESSAGE_SIZE, "Malfomed real : at : %zu, a real can only contain a single .", end);
+            snprintf(error->message, ERROR_MESSAGE_SIZE, "Malfomed real : at index: %zu, a real can only contain a single .", end);
             return 0;
         }
 
@@ -87,6 +86,9 @@ static size_t parse_real_get_end(size_t begin_index, const char* expression, lex
 }
 
 // returns lexem_size == 0 if error
+// typejeton::token is supposed to be the parsed token to be appended to the tokens vector
+// and lexem_size should be the number of characters consumed by the token in the expression,
+// we can then deduce that the next token starts at current_index + lexem_size
 typedef struct 
 {
     typejeton token;
@@ -126,7 +128,7 @@ typedef enum
 } detect_end_result_t;
 
 // weird design, TODO: follow same structure as parse_real
-static detect_end_result_t parse_function_detect_end(size_t possible_end_index, const char* expression, lexical_error_t* error)
+static detect_end_result_t parse_function_detect_end(size_t possible_end_index, const char* expression)
 {
     if (expression[possible_end_index] == '(')
         return DETECT_END_END;
@@ -142,19 +144,31 @@ static detect_end_result_t parse_function_detect_end(size_t possible_end_index, 
         if (expression[j] == '(')
             return DETECT_END_END;
 
-        error->type = MALFORMED_FUNCTION;
-        error->at_index = j;
-        snprintf(error->message, ERROR_MESSAGE_SIZE, 
-            "Malformed function : expected ( at : %zu, got : %c instead, a function name must be followed by a (", 
-        j, expression[j]);
-
         return DETECT_END_ERROR;
     }
 
     return DETECT_END_NOTEND;
 }
 
-static typejeton_and_size_t parse_function(size_t begin_index, const char* expression, lexical_error_t* error)
+// returns 0 if malformed function name and sets *error_at to the problematic index
+static size_t get_function_name_end(size_t begin_index, const char* expression, size_t* error_at)
+{
+    size_t function_name_end = begin_index + 1;
+    for (;; ++function_name_end)
+    {
+        detect_end_result_t status = parse_function_detect_end(function_name_end, expression);
+        if (status == DETECT_END_END)
+            break;
+        if (status == DETECT_END_ERROR || !is_valid_function_char(expression[function_name_end]))
+        {
+            *error_at = function_name_end;
+            return 0;
+        }
+    }
+    return function_name_end;
+}
+
+static typejeton_and_size_t parse_function_or_variable(size_t begin_index, const char* expression, lexical_error_t* error)
 {
     typedef struct 
     {
@@ -177,28 +191,27 @@ static typejeton_and_size_t parse_function(size_t begin_index, const char* expre
 
     typejeton_and_size_t error_rv = {0};
 
-    size_t function_name_end = begin_index;
-    for (size_t i = begin_index;; ++i)
+    size_t error_at = 0;
+    size_t function_name_end = get_function_name_end(begin_index, expression, &error_at);
+    if (error_at)
     {
-        function_name_end = i;
-
-        detect_end_result_t status = parse_function_detect_end(i, expression, error);
-        if (status == DETECT_END_END)
-            break;
-        if (status == DETECT_END_ERROR)
-            return error_rv;
-
-        // condition is also met when current character is \0
-        if (!is_valid_function_char(expression[i]))
+        // despite the fact that the expression does not end with (
+        // it's still possible that it was a variable, since x is a valid function char
+        if (expression[begin_index] == 'x')
         {
-            error->at_index = i;
-            error->type = MALFORMED_FUNCTION;
-            snprintf(error->message, ERROR_MESSAGE_SIZE, 
-                "Malformed function : expected ( at %zu, got %c instead, a function name must only contain alphanumerical characters or underscores and cannot contain spaces",
-            i, expression[i]);
-            return error_rv;
+            typejeton_and_size_t token_and_size = {.lexem_size = 1, .token = {.lexem = VARIABLE}};
+            return token_and_size;
         }
+
+        error->at_index = error_at;
+        error->type = MALFORMED_FUNCTION;
+        snprintf(error->message, ERROR_MESSAGE_SIZE, 
+            "Malformed function : expected ( at index %zu, got %c instead, a function name must be followed by ("
+            ", contain only alphanumerical characters or underscores and cannot contain spaces",
+        error_at, (expression[error_at]));
+        return error_rv;
     }
+
 
     size_t function_name_size = function_name_end - begin_index;
     const char* function_name_begin = expression + begin_index;
@@ -296,10 +309,13 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
     }
     
 
-    for (size_t i = 0; i < strlen(expression);)
+    for (size_t i = 0; ;)
     {
         char current_character = expression[i];
-        if (is_space_or_newline(current_character)) {
+        if (current_character == '\0') break;
+
+        if (is_space_or_newline(current_character))
+        {
             i += 1;
             continue;
         }
@@ -312,19 +328,9 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
             continue;
         }
 
-        // no risk of overflow with expression[i+1] because worst case scenario it will be \0
-        if ((current_character == 'x' || current_character == 'X') &&
-            !is_valid_function_char(expression[i+1]) && expression[i+1] != '(')
-        {
-            typejeton token = {.lexem = VARIABLE};
-            lexical_tokens_vector_push_back(&tokens, &token);
-            i+=1;
-            continue;
-        }
-
         if (is_valid_function_char(current_character))
         {
-            size_t lexem_size = parse(&tokens, i, expression, error, parse_function);
+            size_t lexem_size = parse(&tokens, i, expression, error, parse_function_or_variable);
             if (!lexem_size) return error_lexical_tokens;
             i+= lexem_size;
             continue;
@@ -333,6 +339,13 @@ lexical_tokens_vector_t lexical_parse_tokens(const char* expression, lexical_err
         size_t lexem_size = parse(&tokens, i, expression, error, parse_special_char_token);
         if (!lexem_size) return error_lexical_tokens;
         i+= lexem_size;
+    }
+
+    if (tokens.size == 0)
+    {
+        error->type = NO_TOKENS;
+        sprintf(error->message, "no tokens were found in expression");
+        return error_lexical_tokens;
     }
 
     return tokens;

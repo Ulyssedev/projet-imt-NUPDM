@@ -12,7 +12,7 @@ for example this is legal :
 sin   (  3.4 )
 but this isn't:
 s in( 3.4 )
-the lexer will see s, guess that it should be a function and find that it does not end wih '(' separed by spaces and fail with an error.
+the lexer will see s, guess that it should be a function and find that it does not end wih '(' and fail with an error.
 
 
 sin(3 . 4)
@@ -23,12 +23,14 @@ This behaviour can be useful if we want multiple parameter functions in the futu
 
 function name matching is case sensitive, as such cos is recognized but COS isn't
 
-The variable must be noted x.
+The variable must be noted x (lower case).
 
 treats -3.4 as 2 separed tokens : - and 3.4, one of the reason is because the lexer is not supposed to know the priority of operators, for example in :
 -3^4, 3^4 must be done before the minus is applied...
 
-you can have weird things like NUMBER NUMBER
+can output weird things like NUMBER NUMBER
 or FUNCTION FUNCTION
 or NUMBER FUNCTION ....
 it's the role of the syntaxic analyser to handle these situations
+
+x() will be recognized as a function named x (and error since no function with this name exists)

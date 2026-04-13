@@ -180,7 +180,8 @@ static char* typejeton_to_string(typejeton token)
 
 char * lexical_tokens_to_str(const lexical_tokens_vector_t* tokens)
 {
-    if (!tokens || tokens->size == 0) return "";
+    if (!tokens) return str_copy("null tokens vector  !");
+    if (tokens->size == 0) return str_copy("empty tokens vector");
 
     char_vector_t char_vector = {0};
 
