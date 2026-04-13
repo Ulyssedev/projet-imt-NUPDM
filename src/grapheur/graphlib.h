@@ -1,107 +1,108 @@
+// Fonctions utilitaires de dessin pour le module grapheur
+// Ce fichier expose des helpers pour :
+//  - initialiser la fenêtre OpenGL/GLUT
+//  - appliquer la projection logique (world -> glOrtho)
+//  - dessiner axes, grille, lignes, points et textes en coordonnées
+//    world ou pixel
 
 #ifndef GRAPHLIB_H
 #define GRAPHLIB_H
 
-#include <GL/glut.h>
-#include <stdio.h>
-#include <GL/freeglut.h>
 #include "./utils/global.h"
-#include "./utils/pixels.h"
 #include "./utils/ndc.h"
+#include "./utils/pixels.h"
+#include "utils/world.h"
+#include <GL/freeglut.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
 
-/** Simple 2D point in world coordinates. */
+/** Point 2D en coordonnées world. */
 typedef struct {
   float x;
   float y;
 } Point;
 
 /**
- * Initialize a GLUT window and OpenGL context.
- * @param argc pointer to program argc forwarded to GLUT
- * @param argv program argv forwarded to GLUT
- * @param w window width in pixels
- * @param h window height in pixels
- * @param title window title
+ * Initialise une fenêtre GLUT et le contexte OpenGL.
+ * @param argc pointeur vers argc du programme (transmis à GLUT)
+ * @param argv argv du programme (transmis à GLUT)
+ * @param w largeur de la fenêtre en pixels
+ * @param h hauteur de la fenêtre en pixels
+ * @param title titre de la fenêtre
  */
 void graph_init_window(int *argc, char **argv, int w, int h, const char *title);
 
-/** Set the background/clear color used by `glClear(GL_COLOR_BUFFER_BIT)`.
- * @param r red component (0..1)
- * @param g green component (0..1)
- * @param b blue component (0..1)
- */
+/** Définit la couleur de fond utilisée par `glClear(GL_COLOR_BUFFER_BIT)`. */
 void graph_set_background(float r, float g, float b);
 
 /**
- * Apply the stored logical view to OpenGL (sets projection via glOrtho)
- * and reset the modelview matrix to identity. Call before issuing
- * vertex calls when you want coordinates mapped to the logical view.
+ * Applique la vue logique courante (utilise `glOrtho`) et met la matrice
+ * modelview à l'identité. À appeler avant les appels de dessin qui utilisent
+ * des coordonnées world.
  */
 void graph_apply_view(void);
 
-/**
- * Draw the X and Y axes across the current logical view.
- */
+/** Dessine les axes X et Y sur la vue logique actuelle. */
 void graph_draw_axes(void);
 
 /**
- * Draw a regular grid over the logical view.
- * @param x_step spacing between vertical grid lines
- * @param y_step spacing between horizontal grid lines
+ * Dessine une grille régulière sur la vue logique.
+ * @param x_step espacement entre lignes verticales
+ * @param y_step espacement entre lignes horizontales
  */
 void graph_draw_grid(float x_step, float y_step);
 
 /**
- * Plot an array of points as a scatter plot.
- * @param pts array of Point
- * @param n number of points in pts
- * @param r,g,b color components (0..1)
- * @param size point size in pixels
+ * Trace un nuage de points (scatter plot).
+ * @param pts tableau de `Point`
+ * @param n nombre de points
+ * @param r,g,b composantes de couleur (0..1)
+ * @param size taille du point en pixels
  */
 void graph_plot_points(const Point *pts, int n, float r, float g, float b,
                        float size);
 
 /**
- * Draw a connected polyline through the given points.
- * @param pts array of Point
- * @param n number of points in pts
- * @param r,g,b color components (0..1)
- * @param width visual line thickness in pixels
+ * Trace une polyligne connectée traversant les points fournis.
+ * @param pts tableau de `Point`
+ * @param n nombre de points
+ * @param r,g,b composantes de couleur (0..1)
+ * @param width épaisseur visuelle de la ligne en pixels
  */
 void graph_plot_lines(const Point *pts, int n, float r, float g, float b,
                       float width);
 
-/**
- * Handle window resize: update viewport and internal pixel size tracking.
- * Can be passed directly to `glutReshapeFunc`.
+/** Gère le redimensionnement de la fenêtre : met à jour le viewport et la
+ * taille interne cache des pixels. Peut être passée à `glutReshapeFunc`.
  */
 void graph_reshape(int w, int h);
 
 /**
- * Draw a bitmap text string at window coordinates (pixels, origin at bottom-left).
- * @param text null-terminated string to draw
- * @param x window x in pixels (from left)
- * @param y window y in pixels (from bottom)
+ * Dessine une chaîne de caractères bitmap en coordonnées fenêtre (pixels).
+ * Origine en bas-gauche pour `x,y`.
+ * @param text chaîne terminée par \0
+ * @param x abscisse en pixels (depuis la gauche)
+ * @param y ordonnée en pixels (depuis le bas)
  */
 void graph_draw_text(const char *text, int x, int y);
 
-/**
- * Convenience: draw text anchored near the top-left of the window with
- * a small padding.
- * @param text null-terminated string to draw
- */
+/** Dessine du texte ancré près du coin supérieur gauche (padding fixe). */
 void graph_draw_text_top_left(const char *text);
+void graph_draw_text_top_right(const char *text);
 
-/*Draw small lines to graduate axis*/
+/** Dessine les petites graduations sur les axes (lignes mineures). */
 void graph_draw_grid_min_lines(float x_step, float y_step);
 
+/** Dessine les valeurs numériques (étiquettes) le long des axes. */
 void graph_draw_numbers(float x_step, float y_step);
 
-/*Indicator coordonnes top right*/
+/** Indique les coordonnées (coin supérieur droit). */
 void graph_draw_coords_top_right(float x, float y);
 
-/*Draw red lines from axis to point coords*/
+/** Trace des lignes rouges reliant les axes au point de coordonnées donné. */
 void graph_draw_coords_red_lines(float x, float y);
-
 
 #endif // GRAPHLIB_H

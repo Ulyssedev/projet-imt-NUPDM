@@ -1,19 +1,21 @@
 #ifndef GRAPHEUR_UTILS_CONST_H
 #define GRAPHEUR_UTILS_CONST_H
 
-/** Logical view bounds (world/cartesian coordinates) */
+/** Bornes de la vue logique (coordonnées world/cartésiennes) */
 extern float gx_min;
 extern float gx_max;
 extern float gy_min;
 extern float gy_max;
 
-/** Window pixel dimensions (in pixels) */
+/** Dimensions de la fenêtre en pixels (largeur, hauteur) */
 extern int g_win_w;
 extern int g_win_h;
 
-/*save coords ping pointed with mouse*/
+/* Coordonnées sauvegardées (point sous le curseur) */
 extern float saved_world_x;
 extern float saved_world_y;
+
+/* Flags d'affichage des coordonnées : 0 = caché, 1 = affiché */
 extern int show_coords;
 extern int draw_coords;
 

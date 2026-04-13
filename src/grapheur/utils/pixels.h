@@ -1,26 +1,18 @@
 #ifndef GRAPHEUR_UTILS_PIXELS_H
 #define GRAPHEUR_UTILS_PIXELS_H
 
-#include "world.h"
 #include "global.h"
+#include "world.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** Convert from world/cartesian coordinates to pixel (window) coordinates.
- * @param wx world x
- * @param wy world y
- * @param sx out x pixel (may be NULL)
- * @param sy out y pixel (may be NULL)
+/** Convertit des coordonnées world/cartésiennes en coordonnées pixel (fenêtre).
+ * @param wx abscisse world
+ * @param wy ordonnée world
+ * @param sx sortie abscisse en pixels (peut être NULL)
+ * @param sy sortie ordonnée en pixels (peut être NULL)
  */
 void world_to_pixels(float wx, float wy, int *sx, int *sy);
 
-/** Convert from NDC (-1..1) to pixel coordinates. */
+/** Convertit des coordonnées NDC (-1..1) en coordonnées pixel. */
 void ndc_to_pixels(float nx, float ny, int *sx, int *sy);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // GRAPHEUR_UTILS_PIXELS_H

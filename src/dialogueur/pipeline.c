@@ -1,12 +1,5 @@
 #include "pipeline.h"
 
-#include "../evaluateur/eval.h"
-#include "../lexical/lexical.h"
-#include "../syntaxique/syntaxique.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
 static void copier_message(char *destination, size_t taille_destination,
                            const char *message) {
   if (destination == NULL || taille_destination == 0) {
@@ -40,7 +33,7 @@ static const char *message_erreur_eval(eval_error_t erreur) {
   }
 }
 
-static void liberer_arbre_pipeline(Arbre arbre) {
+void liberer_arbre_pipeline(Arbre arbre) {
   if (arbre == NULL) {
     return;
   }
@@ -80,8 +73,8 @@ static int lexical_vector_vers_tableau_entree(const lexical_tokens_vector_t *tok
   return 1;
 }
 
-int calculer_fx(const char *expression, float x, float *out_resultat,
-                char *message_erreur, size_t taille_message_erreur) {
+int pipeline_build_arbre(const char *expression, Arbre *out_arbre,
+                         lexical_error_t *lerr, int *syntax_err) {
   lexical_error_t erreur_lexicale = {0};
   lexical_tokens_vector_t tokens;
   typejeton *entree = NULL;
@@ -90,22 +83,34 @@ int calculer_fx(const char *expression, float x, float *out_resultat,
   Arbre arbre = NULL;
   int status_syntaxe;
 
-  if (expression == NULL || out_resultat == NULL) {
-    copier_message(message_erreur, taille_message_erreur,
-                   "arguments invalides pour calculer_fx");
+  if (out_arbre == NULL) {
+    return PIPELINE_ERREUR_ARGUMENT;
+  }
+
+  *out_arbre = NULL;
+  if (syntax_err != NULL) {
+    *syntax_err = 0;
+  }
+
+  if (expression == NULL) {
+    if (lerr != NULL) {
+      lerr->type = NULL_EXPRESSION;
+      lerr->at_index = 0;
+      snprintf(lerr->message, ERROR_MESSAGE_SIZE, "expression was null");
+    }
     return PIPELINE_ERREUR_ARGUMENT;
   }
 
   tokens = lexical_parse_tokens(expression, &erreur_lexicale);
   if (tokens.size == 0) {
-    copier_message(message_erreur, taille_message_erreur, erreur_lexicale.message);
+    if (lerr != NULL) {
+      *lerr = erreur_lexicale;
+    }
     return PIPELINE_ERREUR_LEXICALE;
   }
 
   if (!lexical_vector_vers_tableau_entree(&tokens, &entree, &entree_taille)) {
     lexical_tokens_vector_free(&tokens);
-    copier_message(message_erreur, taille_message_erreur,
-                   "allocation impossible pour les tokens d'entree");
     return PIPELINE_ERREUR_MEMOIRE;
   }
 
@@ -113,29 +118,65 @@ int calculer_fx(const char *expression, float x, float *out_resultat,
   if (postfixe == NULL) {
     free(entree);
     lexical_tokens_vector_free(&tokens);
-    copier_message(message_erreur, taille_message_erreur,
-                   "allocation impossible pour le postfixe");
     return PIPELINE_ERREUR_MEMOIRE;
   }
 
   status_syntaxe = convertir_en_postfixe(entree, postfixe);
   if (status_syntaxe != SYNTAXE_OK) {
+    if (syntax_err != NULL) {
+      *syntax_err = status_syntaxe;
+    }
     free(postfixe);
     free(entree);
     lexical_tokens_vector_free(&tokens);
-    copier_message(message_erreur, taille_message_erreur,
-                   "erreur syntaxique pendant la conversion postfixe");
     return PIPELINE_ERREUR_SYNTAXIQUE;
   }
 
   status_syntaxe = convertir_code_postfixe_en_arbre(postfixe, &arbre);
   if (status_syntaxe != SYNTAXE_OK || arbre == NULL) {
+    if (syntax_err != NULL) {
+      *syntax_err = status_syntaxe;
+    }
     free(postfixe);
     free(entree);
     lexical_tokens_vector_free(&tokens);
-    copier_message(message_erreur, taille_message_erreur,
-                   "erreur syntaxique pendant la conversion arbre");
     return PIPELINE_ERREUR_SYNTAXIQUE;
+  }
+
+  *out_arbre = arbre;
+  free(postfixe);
+  free(entree);
+  lexical_tokens_vector_free(&tokens);
+  return PIPELINE_OK;
+}
+
+int calculer_fx(const char *expression, float x, float *out_resultat,
+                char *message_erreur, size_t taille_message_erreur) {
+  Arbre arbre = NULL;
+  lexical_error_t erreur_lexicale = {0};
+  int status_syntaxe = 0;
+  int statut_pipeline;
+
+  if (expression == NULL || out_resultat == NULL) {
+    copier_message(message_erreur, taille_message_erreur,
+                   "arguments invalides pour calculer_fx");
+    return PIPELINE_ERREUR_ARGUMENT;
+  }
+
+  statut_pipeline = pipeline_build_arbre(expression, &arbre, &erreur_lexicale,
+                                         &status_syntaxe);
+  if (statut_pipeline != PIPELINE_OK) {
+    if (statut_pipeline == PIPELINE_ERREUR_LEXICALE) {
+      copier_message(message_erreur, taille_message_erreur,
+                     erreur_lexicale.message);
+    } else if (statut_pipeline == PIPELINE_ERREUR_SYNTAXIQUE) {
+      copier_message(message_erreur, taille_message_erreur,
+                     "erreur syntaxique pendant la construction de l'arbre");
+    } else if (statut_pipeline == PIPELINE_ERREUR_MEMOIRE) {
+      copier_message(message_erreur, taille_message_erreur,
+                     "allocation impossible pendant la construction de l'arbre");
+    }
+    return statut_pipeline;
   }
 
   Eval_reset_error();
@@ -144,16 +185,10 @@ int calculer_fx(const char *expression, float x, float *out_resultat,
     copier_message(message_erreur, taille_message_erreur,
                    message_erreur_eval(Eval_get_error()));
     liberer_arbre_pipeline(arbre);
-    free(postfixe);
-    free(entree);
-    lexical_tokens_vector_free(&tokens);
     return PIPELINE_ERREUR_EVALUATION;
   }
 
   liberer_arbre_pipeline(arbre);
-  free(postfixe);
-  free(entree);
-  lexical_tokens_vector_free(&tokens);
   copier_message(message_erreur, taille_message_erreur, "");
   return PIPELINE_OK;
 }

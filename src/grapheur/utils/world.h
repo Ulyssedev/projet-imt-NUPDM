@@ -3,64 +3,56 @@
 
 #include "global.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** Convert from pixel (window) coordinates to cartesian world coordinates.
- * @param sx x pixel (0 = left)
- * @param sy y pixel (0 = top)
- * @param wx out world x (may be NULL)
- * @param wy out world y (may be NULL)
+/** Convertit des coordonnées pixel (fenêtre) en coordonnées world/cartésiennes.
+ * @param sx abscisse pixel (0 = gauche)
+ * @param sy ordonnée pixel (0 = haut)
+ * @param wx sortie abscisse world (peut être NULL)
+ * @param wy sortie ordonnée world (peut être NULL)
  */
 void pixels_to_world(int sx, int sy, float *wx, float *wy);
 
-/** Convert from NDC (-1..1) coordinates to cartesian world coordinates.
- * @param nx normalized device x (-1..1)
- * @param ny normalized device y (-1..1)
- * @param wx out world x (may be NULL)
- * @param wy out world y (may be NULL)
+/** Convertit des coordonnées NDC (-1..1) en coordonnées world.
+ * @param nx coordonnée NDC X (-1..1)
+ * @param ny coordonnée NDC Y (-1..1)
+ * @param wx sortie abscisse world (peut être NULL)
+ * @param wy sortie ordonnée world (peut être NULL)
  */
 void ndc_to_world(float nx, float ny, float *wx, float *wy);
 
-/* Manage the logical world/view and window size. */
+/* Gestion de la vue logique et de la taille de fenêtre */
 
 /**
- * Set the logical rendering bounds for the orthographic projection.
- * These bounds are applied when `graph_apply_view()` is called.
- * @param x_min left bound
- * @param x_max right bound
- * @param y_min bottom bound
- * @param y_max top bound
+ * Définit les bornes logiques utilisées pour la projection orthographique.
+ * Ces bornes sont prises en compte par `graph_apply_view()`.
+ * @param x_min bord gauche
+ * @param x_max bord droit
+ * @param y_min bord inférieur
+ * @param y_max bord supérieur
  */
 void world_set_view(float x_min, float x_max, float y_min, float y_max);
 
 /**
- * Set current window pixel dimensions used by conversion helpers.
- * Values <= 0 are clamped to 1.
- * @param w width in pixels
- * @param h height in pixels
+ * Met à jour la taille de la fenêtre utilisée par les helpers de conversion.
+ * Les valeurs <= 0 sont replacées à 1.
+ * @param w largeur en pixels
+ * @param h hauteur en pixels
  */
 void world_set_window_size(int w, int h);
 
 /**
- * Zoom the view around the given world coordinate by a factor.
- * factor > 1.0 -> zoom in, factor < 1.0 -> zoom out.
- * @param center_x world x coordinate to keep fixed
- * @param center_y world y coordinate to keep fixed
- * @param factor zoom factor
+ * Zoom centré sur la coordonnée world donnée.
+ * factor > 1.0 -> zoom avant, factor < 1.0 -> zoom arrière.
+ * @param center_x abscisse world à conserver fixe
+ * @param center_y ordonnée world à conserver fixe
+ * @param factor facteur de zoom
  */
 void world_zoom_at(float center_x, float center_y, float factor);
 
 /**
- * Pan the view by world-space offsets.
- * @param dx shift in x (world units)
- * @param dy shift in y (world units)
+ * Décale la vue de dx, dy (en unités world).
+ * @param dx translation en X (unités world)
+ * @param dy translation en Y (unités world)
  */
 void world_pan(float dx, float dy);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // GRAPHEUR_UTILS_WORLD_H
