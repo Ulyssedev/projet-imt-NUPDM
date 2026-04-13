@@ -121,12 +121,14 @@ static char* get_str_value_for_typetoken(typetoken type, typevaleur valeur)
         case FONCTION:
             return str_copy(typefonction_to_str(valeur.fonction));
         case REEL:
-
+        {
             size_t required_size = snprintf(NULL, 0, "%f", valeur.reel) + 1;
             char* buff = malloc(required_size);
             snprintf(buff, required_size, "%f", valeur.reel);
             return buff;
+        }
         default:
+            break;
     }
     return NULL;
 }
