@@ -9,7 +9,15 @@
 // TODO: tests
 // TODO rename parse_function
 
-extern char* str_copy(const char* str);
+// this is used to convert a statically allocated const char* into a dynamic one, that can be freed
+// must be freed
+static char* str_copy(const char* str)
+{
+    size_t str_size = strlen(str);
+    char* buff = malloc(str_size + 1);
+    memcpy(buff, str, str_size + 1);
+    return buff;
+}
 
 // convert for example ' ' into "SPACE", for error messages that needs to print the problematic character
 // must be freed
