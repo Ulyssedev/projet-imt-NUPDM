@@ -21,7 +21,9 @@ static typejeton jeton_courant(const ContexteSyntaxe *ctx) {
   return ctx->entree[ctx->index_entree];
 }
 
-static int analyser_exp(ContexteSyntaxe *ctx) {
+static int analyser_exp(ContexteSyntaxe *ctx);
+
+static int analyser_primaire(ContexteSyntaxe *ctx) {
   typetoken courant = token_courant(ctx);
 
   if (courant == REEL || courant == VARIABLE) {
@@ -34,27 +36,7 @@ static int analyser_exp(ContexteSyntaxe *ctx) {
     typejeton fonction = jeton_courant(ctx);
     ctx->index_entree++;
 
-    if (!analyser_exp(ctx)) {
-      return 0;
-    }
-
-    ctx->sortie[ctx->index_sortie++] = fonction;
-    return 1;
-  }
-
-  if (courant == PAR_OUV) {
-    typejeton operateur;
-
-    ctx->index_entree++;
-
-    if (!analyser_exp(ctx)) {
-      return 0;
-    }
-
-    courant = token_courant(ctx);
-
-    if (courant == OPERATEUR) {
-      operateur = jeton_courant(ctx);
+    if (token_courant(ctx) == PAR_OUV) {
       ctx->index_entree++;
 
       if (!analyser_exp(ctx)) {
@@ -66,19 +48,104 @@ static int analyser_exp(ContexteSyntaxe *ctx) {
       }
 
       ctx->index_entree++;
-      ctx->sortie[ctx->index_sortie++] = operateur;
-      return 1;
+    } else {
+      if (!analyser_primaire(ctx)) {
+        return 0;
+      }
     }
 
-    if (est_parenthese_fermante(courant)) {
-      ctx->index_entree++;
-      return 1;
+    ctx->sortie[ctx->index_sortie++] = fonction;
+    return 1;
+  }
+
+  if (courant == PAR_OUV) {
+    ctx->index_entree++;
+
+    if (!analyser_exp(ctx)) {
+      return 0;
     }
 
-    return 0;
+    if (!est_parenthese_fermante(token_courant(ctx))) {
+      return 0;
+    }
+
+    ctx->index_entree++;
+    return 1;
   }
 
   return 0;
+}
+
+static int analyser_puissance(ContexteSyntaxe *ctx) {
+  typejeton operateur;
+
+  if (!analyser_primaire(ctx)) {
+    return 0;
+  }
+
+  if (token_courant(ctx) == OPERATEUR &&
+      jeton_courant(ctx).valeur.operateur == PUIS) {
+    operateur = jeton_courant(ctx);
+    ctx->index_entree++;
+
+    if (!analyser_puissance(ctx)) {
+      return 0;
+    }
+
+    ctx->sortie[ctx->index_sortie++] = operateur;
+  }
+
+  return 1;
+}
+
+static int analyser_produit(ContexteSyntaxe *ctx) {
+  if (!analyser_puissance(ctx)) {
+    return 0;
+  }
+
+  while (token_courant(ctx) == OPERATEUR) {
+    typejeton operateur = jeton_courant(ctx);
+
+    if (operateur.valeur.operateur != FOIS &&
+        operateur.valeur.operateur != DIV) {
+      break;
+    }
+
+    ctx->index_entree++;
+
+    if (!analyser_puissance(ctx)) {
+      return 0;
+    }
+
+    ctx->sortie[ctx->index_sortie++] = operateur;
+  }
+
+  return 1;
+}
+
+static int analyser_exp(ContexteSyntaxe *ctx) {
+  if (!analyser_produit(ctx)) {
+    return 0;
+  }
+
+  while (token_courant(ctx) == OPERATEUR) {
+    typejeton operateur = jeton_courant(ctx);
+
+    if (operateur.valeur.operateur != PLUS &&
+        operateur.valeur.operateur != MOINS) {
+      break;
+    }
+
+    ctx->index_entree++;
+
+    if (!analyser_produit(ctx)) {
+      return 0;
+    }
+
+    ctx->sortie[ctx->index_sortie++] = operateur;
+  }
+
+  return 1;
 }
 
 int convertir_en_postfixe(typejeton entree[], typejeton sortie[]) {

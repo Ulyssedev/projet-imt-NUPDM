@@ -29,7 +29,8 @@ static int jetons_egaux(typejeton a, typejeton b) {
   }
 }
 
-static int verifier_sortie(typejeton sortie[], typejeton attendu[], int taille) {
+static int verifier_sortie(typejeton sortie[], typejeton attendu[],
+                           int taille) {
   int i;
 
   for (i = 0; i < taille; i++) {
@@ -80,7 +81,8 @@ static int verifier_arbre_test(Arbre arbre) {
     return 0;
   }
 
-  if (arbre->jeton.lexem != OPERATEUR || arbre->jeton.valeur.operateur != PLUS) {
+  if (arbre->jeton.lexem != OPERATEUR ||
+      arbre->jeton.valeur.operateur != PLUS) {
     return 0;
   }
 
@@ -116,12 +118,10 @@ static int verifier_arbre_test(Arbre arbre) {
 }
 
 static int executer_test_postfixe_vers_arbre(void) {
-  typejeton code_postfixe[] = {{REEL, {.reel = 3.0f}},
-                               {VARIABLE, {0}},
-                               {OPERATEUR, {.operateur = FOIS}},
-                               {REEL, {.reel = 5.0f}},
-                               {OPERATEUR, {.operateur = PLUS}},
-                               {FIN, {0}}};
+  typejeton code_postfixe[] = {
+      {REEL, {.reel = 3.0f}},           {VARIABLE, {0}},
+      {OPERATEUR, {.operateur = FOIS}}, {REEL, {.reel = 5.0f}},
+      {OPERATEUR, {.operateur = PLUS}}, {FIN, {0}}};
   Arbre arbre = NULL;
   int retour = convertir_code_postfixe_en_arbre(code_postfixe, &arbre);
 
@@ -169,9 +169,37 @@ int main(void) {
                                  {PAR_FERM, {0}},
                                  {FIN, {0}}};
 
+  typejeton entree_puissance[] = {{REEL, {.reel = 3.0f}},
+                                  {OPERATEUR, {.operateur = PUIS}},
+                                  {REEL, {.reel = 2.0f}},
+                                  {FIN, {0}}};
+  typejeton sortie_puissance[] = {{REEL, {.reel = 3.0f}},
+                                  {REEL, {.reel = 2.0f}},
+                                  {OPERATEUR, {.operateur = PUIS}}};
+
+  typejeton entree_trigo_produit[] = {{FONCTION, {.fonction = SIN}},
+                                      {PAR_OUV, {0}},
+                                      {VARIABLE, {0}},
+                                      {PAR_FERM, {0}},
+                                      {OPERATEUR, {.operateur = FOIS}},
+                                      {FONCTION, {.fonction = COS}},
+                                      {PAR_OUV, {0}},
+                                      {VARIABLE, {0}},
+                                      {PAR_FERM, {0}},
+                                      {FIN, {0}}};
+  typejeton sortie_trigo_produit[] = {{VARIABLE, {0}},
+                                      {FONCTION, {.fonction = SIN}},
+                                      {VARIABLE, {0}},
+                                      {FONCTION, {.fonction = COS}},
+                                      {OPERATEUR, {.operateur = FOIS}}};
+
   TestCase tests[] = {
       {"binaire parenthese", entree_ok, 6, SYNTAXE_OK, sortie_ok, 3},
       {"fonction unaire", entree_fonction, 3, SYNTAXE_OK, sortie_fonction, 2},
+      {"puissance infixe", entree_puissance, 4, SYNTAXE_OK, sortie_puissance,
+       3},
+      {"produit fonctions infixe", entree_trigo_produit, 10, SYNTAXE_OK,
+       sortie_trigo_produit, 5},
       {"fin manquante", entree_sans_fin, 1, SYNTAXE_ERREUR_FIN_MANQUANTE, NULL,
        0},
       {"grammaire invalide", entree_invalide, 5, SYNTAXE_ERREUR_GRAMMAIRE, NULL,
