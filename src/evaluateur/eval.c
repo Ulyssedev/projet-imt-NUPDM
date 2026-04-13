@@ -141,7 +141,7 @@ float my_sin(float x) {
     x -= TWO_PI;
 
   float res = x;
-  float terme = x; /* first term */
+  float terme = x; /* premier terme */
   for (int k = 1; k <= 12; ++k) {
     terme *= -x * x / ((2 * k) * (2 * k + 1));
     res += terme;
@@ -165,7 +165,7 @@ float my_sqrt(float x) {
 
 float my_log(float x) {
   // if (x <= 0.0f) {
-  //   return -1e38f; /* out-of-domain marker */
+  //   return -1e38f; /* en dehors des domaines de calcul */
   // }
 
   // Approximation du logarithme

@@ -291,12 +291,9 @@ static typejeton_and_size_t parse_function_or_variable(size_t begin_index,
   error->at_index = begin_index;
   error->type = UNKNOWN_FUNCTION;
 
-  char *null_terminated_function_name = char_buff_to_null_terminated_string(
-      function_name_begin, function_name_size);
-  snprintf(error->message, ERROR_MESSAGE_SIZE,
-           "Fonction inconnue : %s, caractere numero : %zu",
-           null_terminated_function_name, begin_index + 1);
-  free(null_terminated_function_name);
+    char* null_terminated_function_name = char_buff_to_null_terminated_string(function_name_begin, function_name_size);
+    snprintf(error->message, ERROR_MESSAGE_SIZE, "Fonction inconnue : %s, caractere numero : %zu,  fonctions reconnus : %s", null_terminated_function_name, begin_index + 1, "abs,sin,sqrt,log,cos,tan,exp,entier,val_neg,sinc");
+    free(null_terminated_function_name);
 
   return error_rv;
 }
