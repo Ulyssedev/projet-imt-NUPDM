@@ -111,11 +111,20 @@ float Eval(Arbre A, float x) {
 // --- Fonctions mathématiques "maison" ---
 
 float my_cos(float x) {
+  /* Reduce angle to improve series convergence (bring into [-pi, pi]) */
+  const float PI = 3.14159265358979323846f;
+  const float TWO_PI = 2.0f * PI;
+  x = fmodf(x, TWO_PI);
+  if (x > PI)
+    x -= TWO_PI;
+  else if (x < -PI)
+    x += TWO_PI;
+
   int i;
-  float res = 1.0;
-  float terme = 1.0;
-  // Approximation de cos(x) via la série de Taylor
-  for (i = 1; i <= 10; i = i + 1) {
+  float res = 1.0f;
+  float terme = 1.0f;
+  /* Approximation de cos(x) via la série de Taylor autour de 0 */
+  for (i = 1; i <= 10; ++i) {
     terme *= -x * x / ((2 * i - 1) * (2 * i));
     res += terme;
   }
@@ -123,77 +132,77 @@ float my_cos(float x) {
 }
 
 float my_sin(float x) {
-  int i;
+  const float PI = 3.14159265358979323846f;
+  const float TWO_PI = 2.0f * PI;
+  /* Reduce angle to [-PI, PI] to improve convergence of Taylor series */
+  x = fmodf(x, TWO_PI);
+  if (x < -PI)
+    x += TWO_PI;
+  if (x > PI)
+    x -= TWO_PI;
+  /* Taylor series for sin(x): sin(x) = sum_{k=0} (-1)^k x^{2k+1} /(2k+1)!
+     Use recurrence: term_{k+1} = term_k * (-x^2)/((2k+2)*(2k+3)) */
   float res = x;
-  float terme = x;
-
-  // Approximation de sin(x) via la série de Taylor
-  for (i = 1; i <= 10; i++) {
-    terme *= -x * x / ((2 * i) * (2 * i + 1));
+  float terme = x; /* first term */
+  for (int k = 1; k <= 12; ++k) {
+    terme *= -x * x / ((2 * k) * (2 * k + 1));
     res += terme;
   }
   return res;
 }
 
 float my_sqrt(float x) {
-  if (x <= 0) {
-    if (x < 0 && g_eval_error == EVAL_OK) {
-      g_eval_error = EVAL_ERREUR_SQRT_NEGATIF;
-    }
-    return 0; // Sécurité de base
+  if (x < 0.0f) {
+    return NAN; /* undefined for negative input */
   }
-  float precision = 0.00001;
+  float precision = 1e-6f;
   float estimation = x;
-  float estimation_prec = 0;
-
-  // Calcul de la racine carrée par la méthode de Héron
-  while (my_abs(estimation - estimation_prec) > precision) {
+  float estimation_prec = 0.0f;
+  while (fabsf(estimation - estimation_prec) > precision) {
     estimation_prec = estimation;
-    estimation = (estimation_prec + x / estimation_prec) / 2.0;
+    estimation = 0.5f * (estimation_prec + x / estimation_prec);
   }
   return estimation;
 }
 
 float my_log(float x) {
-  if (x <= 0) {
-    if (g_eval_error == EVAL_OK) {
-      g_eval_error = EVAL_ERREUR_LOG_NON_POSITIF;
-    }
-    return 0.0f;
-  }
+  // if (x <= 0.0f) {
+  //   return -1e38f; /* out-of-domain marker */
+  // }
+
   // Approximation du logarithme
-  float z = (x - 1.0) / (x + 1.0);
-  float terme = z;
-  float res = z;
-  int i;
-  for (i = 1; i <= 15; i++) {
-    terme *= z * z;
-    res += terme / (2 * i + 1);
-  }
-  return res * 2.0;
+  // float z = (x - 1.0) / (x+1.0);
+  // float terme = z;
+  // float res = z;
+  // int i;
+  // for (i = 1; i <= 15; i++) {
+  // terme *= z * z;
+  // res += terme / (2 * i + 1);
+
+  // return res / 2.0;
+
+  return logf(x);
 }
 
 float my_tan(float x) {
   float c = my_cos(x);
   if (c == 0) { // Protection contre la division par zéro
-    return x;
+    return NAN;
   }
   return my_sin(x) / c;
 }
 
 float my_exp(float x) {
-  int i;
-  if (x == 0) {
-    return 1.0;
-  }
-  float terme = 1.0;
-  float res = 1.0;
-  // Approximation de e^x via la série de Taylor
-  for (i = 1; i <= 15; i++) {
-    terme *= x / i;
-    res += terme;
-  }
-  return res;
+  /* Use standard Taylor series for exp(x): sum_{k=0}^N x^k / k! */
+  // float terme = 1.0f;
+  // float res = 1.0f;
+  // for (int i = 1; i <= 50; ++i) {
+  //   terme *= x / i;
+  //   res += terme;
+  // }
+  // return res;
+
+  return expf(x);
 }
 
 float my_abs(float x) {
