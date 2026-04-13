@@ -63,6 +63,9 @@ TEST_LEXICAL_OBJS = $(TEST_LEXICAL_SRCS:./%.c=$(BUILD_DIR)/%.o)
 
 all: $(BUILD_DIR)/$(PROJECT_NAME)
 
+project: $(BUILD_DIR)/$(PROJECT_NAME)
+
+
 $(BUILD_DIR)/$(PROJECT_NAME): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
@@ -107,10 +110,6 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(BUILD_DIR)
