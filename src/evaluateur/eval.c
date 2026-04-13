@@ -111,7 +111,7 @@ float Eval(Arbre A, float x) {
 // --- Fonctions mathématiques "maison" ---
 
 float my_cos(float x) {
-  /* Reduce angle to improve series convergence (bring into [-pi, pi]) */
+  /* Réduire l'angle pour améliorer l'approximation (ramener à [-pi, pi]) */
   const float PI = 3.14159265358979323846f;
   const float TWO_PI = 2.0f * PI;
   x = fmodf(x, TWO_PI);
@@ -134,14 +134,13 @@ float my_cos(float x) {
 float my_sin(float x) {
   const float PI = 3.14159265358979323846f;
   const float TWO_PI = 2.0f * PI;
-  /* Reduce angle to [-PI, PI] to improve convergence of Taylor series */
+  /* Réduire l'angle pour améliorer l'approximation (ramener à [-pi, pi]) */
   x = fmodf(x, TWO_PI);
   if (x < -PI)
     x += TWO_PI;
   if (x > PI)
     x -= TWO_PI;
-  /* Taylor series for sin(x): sin(x) = sum_{k=0} (-1)^k x^{2k+1} /(2k+1)!
-     Use recurrence: term_{k+1} = term_k * (-x^2)/((2k+2)*(2k+3)) */
+
   float res = x;
   float terme = x; /* first term */
   for (int k = 1; k <= 12; ++k) {
@@ -153,7 +152,7 @@ float my_sin(float x) {
 
 float my_sqrt(float x) {
   if (x < 0.0f) {
-    return NAN; /* undefined for negative input */
+    return NAN; /* Indéfinie pour des valeurs négatives */
   }
   float precision = 1e-6f;
   float estimation = x;
@@ -193,7 +192,6 @@ float my_tan(float x) {
 }
 
 float my_exp(float x) {
-  /* Use standard Taylor series for exp(x): sum_{k=0}^N x^k / k! */
   // float terme = 1.0f;
   // float res = 1.0f;
   // for (int i = 1; i <= 50; ++i) {
@@ -237,7 +235,9 @@ float sinc(float x) {
   return my_sin(x) / x;
 }
 
-float my_integral(Arbre expression, float a, float b, int n) { //fonction intégrale ajouter en plus (pour le plaisir)
+float my_integral(
+    Arbre expression, float a, float b,
+    int n) { // fonction intégrale ajouter en plus (pour le plaisir)
   if (n <= 0 || expression == NULL) {
     // Petite sécurité
     if (g_eval_error == EVAL_OK && expression == NULL) {
