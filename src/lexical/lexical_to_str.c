@@ -102,7 +102,7 @@ static const char* typefonction_to_str(typefonction type)
 
 // this is used to convert a statically allocated const char* into a dynamic one, that can be freed
 // must be freed
-char* str_copy(const char* str)
+static char* str_copy(const char* str)
 {
     size_t str_size = strlen(str);
     char* buff = malloc(str_size + 1);
