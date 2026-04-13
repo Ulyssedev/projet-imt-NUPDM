@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque fois
+// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque
+// fois
 Node *creer_noeud(typetoken lexem, typevaleur val, Node *gauche, Node *droite) {
   Node *nouveau = (Node *)malloc(sizeof(Node));
   if (nouveau == NULL) {
@@ -20,7 +20,8 @@ Node *creer_noeud(typetoken lexem, typevaleur val, Node *gauche, Node *droite) {
 
 // Parcours l'arbre pour tout supprimer à la fin et éviter les fuites mémoire
 void liberer_arbre(Arbre A) {
-  if (A == NULL) return;
+  if (A == NULL)
+    return;
   liberer_arbre(A->pjeton_preced);
   liberer_arbre(A->pjeton_suiv);
   free(A);
@@ -40,7 +41,7 @@ void test_expression_simple() {
   typevaleur val_5 = {.reel = 5.0};
   Node *noeud_5 = creer_noeud(REEL, val_5, NULL, NULL);
 
-  typevaleur val_vide = {0}; 
+  typevaleur val_vide = {0};
   Node *noeud_x = creer_noeud(VARIABLE, val_vide, NULL, NULL);
 
   // Création du noeud de multiplication (3 * x)
@@ -60,7 +61,8 @@ void test_expression_simple() {
   printf("Resultat obtenu : %.2f\n", resultat);
   printf("Resultat attendu: 11.00\n");
 
-  // On vérifie que le calcul est bon et qu'il n'y a pas eu d'erreur déclenchée pendant le parcours
+  // On vérifie que le calcul est bon et qu'il n'y a pas eu d'erreur déclenchée
+  // pendant le parcours
   if (resultat == 11.0f && Eval_get_error() == EVAL_OK) {
     printf(">> Test REUSSI !\n");
   } else {
@@ -86,17 +88,18 @@ void test_division_par_zero() {
   Node *racine = creer_noeud(OPERATEUR, v_div, n_10, n_x);
 
   // On lance le calcul avec x = 0 exprès pour forcer l'erreur
-  float res = Eval(racine, 0.0f); 
+  float res = Eval(racine, 0.0f);
 
   printf("Equation testee : 10 / x (avec x = 0)\n");
-  
-  // La fonction Eval aurait dû lever l'erreur spécifique dans la variable globale
+
+  // La fonction Eval aurait dû lever l'erreur spécifique dans la variable
+  // globale
   if (Eval_get_error() == EVAL_ERREUR_DIVISION_PAR_ZERO) {
     printf(">> Test REUSSI ! L'erreur a ete interceptee.\n");
   } else {
     printf(">> Enorme probleme, pas d'erreur detectee.\n");
   }
-  
+
   liberer_arbre(racine);
 }
 
@@ -109,7 +112,7 @@ void test_identite_trigo_extreme() {
   typevaleur v_vide = {0};
   Node *n_x1 = creer_noeud(VARIABLE, v_vide, NULL, NULL);
   Node *n_x2 = creer_noeud(VARIABLE, v_vide, NULL, NULL);
-  
+
   typevaleur v_2 = {.reel = 2.0};
   Node *n_2_a = creer_noeud(REEL, v_2, NULL, NULL);
   Node *n_2_b = creer_noeud(REEL, v_2, NULL, NULL);
@@ -131,15 +134,15 @@ void test_identite_trigo_extreme() {
   Node *racine = creer_noeud(OPERATEUR, v_plus, n_cos_carre, n_sin_carre);
 
   // On teste avec une valeur de x difficile à évaluer pour nos séries de Taylor
-  float x_test = 1.5f; 
+  float x_test = 1.5f;
   float res = Eval(racine, x_test);
 
   printf("Equation testee : cos(x)^2 + sin(x)^2\n");
   printf("Valeur de x     : %.2f\n", x_test);
   printf("Resultat obtenu : %.5f\n", res);
 
-  // Le résultat ne sera jamais *parfaitement* 1.0 à cause de la précision des floats,
-  // donc on laisse une petite marge d'erreur logique
+  // Le résultat ne sera jamais *parfaitement* 1.0 à cause de la précision des
+  // floats, donc on laisse une petite marge d'erreur logique
   if (res > 0.99f && res < 1.01f) {
     printf(">> Test REUSSI ! Taylor fonctionne bien.\n");
   } else {
@@ -149,7 +152,7 @@ void test_identite_trigo_extreme() {
   liberer_arbre(racine);
 }
 
-//Test 4 : La fonction exponentielle 
+// Test 4 : La fonction exponentielle
 
 void test_exponentielle() {
   printf("\n--- Test 4 : Exponentielle exp(x) avec x = 1 ---\n");
@@ -172,11 +175,13 @@ void test_exponentielle() {
   printf("Resultat obtenu : %.5f\n", res);
   printf("Resultat attendu: ~2.71828\n");
 
-  // On vérifie qu'on est bien autour de 2.718 (on laisse une petite marge pour les floats)
+  // On vérifie qu'on est bien autour de 2.718 (on laisse une petite marge pour
+  // les floats)
   if (res > 2.71f && res < 2.72f && Eval_get_error() == EVAL_OK) {
     printf(">> Test REUSSI ! La serie de Taylor de exp() est super precise.\n");
   } else {
-    printf(">> Enorme probleme, l'approximation est fausse (verifie ta boucle dans my_exp).\n");
+    printf(">> Enorme probleme, l'approximation est fausse (verifie ta boucle "
+           "dans my_exp).\n");
   }
 
   liberer_arbre(racine);
@@ -214,7 +219,8 @@ void test_limites_zero() {
   printf("Resultat attendu: 1.00\n");
 
   if (res == 1.0f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI ! La division par zero de sinc a bien ete evitee.\n");
+    printf(
+        ">> Test REUSSI ! La division par zero de sinc a bien ete evitee.\n");
   } else {
     printf(">> Probleme avec les limites en zero.\n");
   }
@@ -245,14 +251,15 @@ void test_racine_et_log() {
   printf("Test 2 -> log(1)  = %.2f (Attendu : 0.00)\n", res_log);
 
   // Tolérance pour les floats, surtout pour Héron et Taylor
-  if (res_sqrt > 2.99f && res_sqrt < 3.01f && res_log > -0.01f && res_log < 0.01f) {
+  if (res_sqrt > 2.99f && res_sqrt < 3.01f && res_log > -0.01f &&
+      res_log < 0.01f) {
     printf(">> Test REUSSI ! Héron et Taylor fonctionnent super bien.\n");
   } else {
     printf(">> Oups, verifie tes approximations.\n");
   }
 
-  liberer_arbre(racine_sqrt);
-  liberer_arbre(racine_log);
+  // liberer_arbre(racine_sqrt);
+  // liberer_arbre(racine_log);
 }
 
 // Test 7 : Les utilitaires (valeur absolue, negatif, entier)
@@ -298,7 +305,8 @@ void test_utilitaires() {
 
 // Test 8 : Intégrale numérique (méthode des trapèzes)
 void test_integration() {
-  printf("\n--- Test 8 : Integration numerique de f(x) = x entre 0 et 10 ---\n");
+  printf(
+      "\n--- Test 8 : Integration numerique de f(x) = x entre 0 et 10 ---\n");
   Eval_reset_error();
 
   // 1. On crée l'arbre qui représente simplement "x"
@@ -310,7 +318,7 @@ void test_integration() {
   float a = 0.0f;
   float b = 10.0f;
   int precision = 1000;
-  
+
   float res = my_integral(racine, a, b, precision);
 
   printf("Equation testee  : integrale(x)\n");
@@ -335,7 +343,7 @@ void test_integral_sinus() {
   // 1. On crée l'arbre : sin(x)
   typevaleur v_vide = {0};
   Node *n_x = creer_noeud(VARIABLE, v_vide, NULL, NULL);
-  
+
   typevaleur v_sin = {.fonction = SIN};
   Node *racine = creer_noeud(FONCTION, v_sin, n_x, NULL);
 
@@ -343,7 +351,7 @@ void test_integral_sinus() {
   float a = 0.0f;
   float b = 3.14159265f; // Approximativement PI
   int n = 1000;          // Nombre de trapèzes
-  
+
   float res = my_integral(racine, a, b, n);
 
   printf("Equation testee  : integrale(sin(x))\n");
@@ -355,7 +363,8 @@ void test_integral_sinus() {
   if (res > 1.99f && res < 2.01f && Eval_get_error() == EVAL_OK) {
     printf(">> Test REUSSI ! L'integration du sinus est precise.\n");
   } else {
-    printf(">> Probleme avec l'integrale du sinus (verifie ta constante PI ou ta fonction my_sin).\n");
+    printf(">> Probleme avec l'integrale du sinus (verifie ta constante PI ou "
+           "ta fonction my_sin).\n");
   }
 
   liberer_arbre(racine);

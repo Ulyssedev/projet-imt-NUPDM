@@ -41,6 +41,14 @@ TEST_EVALUATEUR_SRCS = \
 	$(COMON_DIR)/main.c
 TEST_EVALUATEUR_OBJS = $(TEST_EVALUATEUR_SRCS:./%.c=$(BUILD_DIR)/%.o)
 
+TEST_LEXICAL_SRCS = \
+	$(TESTS_DIR)/test_lexical.c \
+	$(LEXICAL_DIR)/lexical.c \
+	$(LEXICAL_DIR)/lexical_vector.c \
+	$(LEXICAL_DIR)/lexical_to_str.c \
+	$(COMON_DIR)/main.c
+TEST_LEXICAL_OBJS = $(TEST_LEXICAL_SRCS:./%.c=$(BUILD_DIR)/%.o)
+
 BUILD_DIR = ./build
 
 SRCS = $(shell find $(SRC_DIR) -name '*.c') ./*.c
@@ -94,9 +102,10 @@ project: $(PROJECT_OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(PROJECT_OBJS) -o $(BUILD_DIR)/$(PROJECT_NAME)-project $(LDFLAGS)
 
-test: $(BUILD_DIR)/test-syntaxique $(BUILD_DIR)/test-evaluateur
+test: $(BUILD_DIR)/test-syntaxique $(BUILD_DIR)/test-evaluateur $(BUILD_DIR)/test-lexical
 	./$(BUILD_DIR)/test-syntaxique
 	./$(BUILD_DIR)/test-evaluateur
+	./$(BUILD_DIR)/test-lexical
 
 $(BUILD_DIR)/test-syntaxique: $(TEST_SYNTAXIQUE_OBJS)
 	@mkdir -p $(BUILD_DIR)
@@ -105,6 +114,10 @@ $(BUILD_DIR)/test-syntaxique: $(TEST_SYNTAXIQUE_OBJS)
 $(BUILD_DIR)/test-evaluateur: $(TEST_EVALUATEUR_OBJS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(TEST_EVALUATEUR_OBJS) -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/test-lexical: $(TEST_LEXICAL_OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(TEST_LEXICAL_OBJS) -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
