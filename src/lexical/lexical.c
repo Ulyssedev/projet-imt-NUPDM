@@ -9,6 +9,29 @@
 // TODO: tests
 // TODO rename parse_function
 
+extern char* str_copy(const char* str);
+
+// convert for example ' ' into "SPACE", for error messages that needs to print the problematic character
+// must be freed
+static char* convert_non_displayable_char(char c)
+{
+    switch (c)
+    {
+        case ' ':
+            return str_copy("SPACE");
+        case '\n':
+            return str_copy("NEWLINE");
+        case '\0':
+            return str_copy("NULL");
+        default:
+            break;
+    }
+    char* rv = malloc(2);
+    rv[0] = c;
+    rv[1] = '\0';
+    return rv;
+}
+
 static bool is_alpha(char c)
 {
     return (65 <= c && c <= 90) || (97 <= c && c <= 122);
@@ -68,9 +91,9 @@ static size_t parse_real_get_end(size_t begin_index, const char* expression, lex
         {
             error->type = MALFORMED_REAL;
             snprintf(error->message, ERROR_MESSAGE_SIZE, 
-                "Malfomed real : at index: %zu, a real can only contain digits or one . , got : %c instead"
+                "Malfomed real : at index: %zu, a real can only contain digits or one . , got : %s instead"
                 "\nFunction names can't start with a number"
-                , end, (current_character));
+                , end, convert_non_displayable_char(current_character));
             return 0;
         }
 
@@ -206,9 +229,9 @@ static typejeton_and_size_t parse_function_or_variable(size_t begin_index, const
         error->at_index = error_at;
         error->type = MALFORMED_FUNCTION;
         snprintf(error->message, ERROR_MESSAGE_SIZE, 
-            "Malformed function : expected ( at index %zu, got %c instead, a function name must be followed by ("
+            "Malformed function : expected ( at index %zu, got %s instead, a function name must be followed by ("
             ", contain only alphanumerical characters or underscores and cannot contain spaces",
-        error_at, (expression[error_at]));
+        error_at, convert_non_displayable_char(expression[error_at]));
         return error_rv;
     }
 
