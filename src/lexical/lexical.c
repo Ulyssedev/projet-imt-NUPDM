@@ -262,7 +262,9 @@ static typejeton_and_size_t parse_function_or_variable(size_t begin_index, const
     error->type = UNKNOWN_FUNCTION;
 
     char* null_terminated_function_name = char_buff_to_null_terminated_string(function_name_begin, function_name_size);
-    snprintf(error->message, ERROR_MESSAGE_SIZE, "Uknown function : %s, at index : %zu,  recognized functions : %s", null_terminated_function_name, begin_index, "TODO");
+    snprintf(error->message, ERROR_MESSAGE_SIZE, "Uknown function : %s, at index : %zu,  recognized functions : %s", 
+        null_terminated_function_name, begin_index, 
+        "abs,sin,sqrt,log,cos,tan,exp,entier,val_neg,sinc");
     free(null_terminated_function_name);
 
     return error_rv;
