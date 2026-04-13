@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque
-// fois
+// Permet de créer un noeud en une seule ligne au lieu de tout réécrire à chaque fois
 Node *creer_noeud(typetoken lexem, typevaleur val, Node *gauche, Node *droite) {
   Node *nouveau = (Node *)malloc(sizeof(Node));
   if (nouveau == NULL) {
@@ -27,7 +26,7 @@ void liberer_arbre(Arbre A) {
   free(A);
 }
 
-// --- Nos tests ---
+// Nos tests
 
 // Test 1 : Vérifie qu'on arrive bien à construire et calculer "3 * x + 5"
 void test_expression_simple() {
@@ -64,7 +63,7 @@ void test_expression_simple() {
   // On vérifie que le calcul est bon et qu'il n'y a pas eu d'erreur déclenchée
   // pendant le parcours
   if (resultat == 11.0f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI !\n");
+    printf(">> Test REUSSI \n");
   } else {
     printf(">> Enorme probleme, le test a echoue.\n");
   }
@@ -95,7 +94,7 @@ void test_division_par_zero() {
   // La fonction Eval aurait dû lever l'erreur spécifique dans la variable
   // globale
   if (Eval_get_error() == EVAL_ERREUR_DIVISION_PAR_ZERO) {
-    printf(">> Test REUSSI ! L'erreur a ete interceptee.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Enorme probleme, pas d'erreur detectee.\n");
   }
@@ -144,7 +143,7 @@ void test_identite_trigo_extreme() {
   // Le résultat ne sera jamais *parfaitement* 1.0 à cause de la précision des
   // floats, donc on laisse une petite marge d'erreur logique
   if (res > 0.99f && res < 1.01f) {
-    printf(">> Test REUSSI ! Taylor fonctionne bien.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Enorme probleme, le resultat n'est pas 1.\n");
   }
@@ -178,7 +177,7 @@ void test_exponentielle() {
   // On vérifie qu'on est bien autour de 2.718 (on laisse une petite marge pour
   // les floats)
   if (res > 2.71f && res < 2.72f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI ! La serie de Taylor de exp() est super precise.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Enorme probleme, l'approximation est fausse (verifie ta boucle "
            "dans my_exp).\n");
@@ -220,7 +219,7 @@ void test_limites_zero() {
 
   if (res == 1.0f && Eval_get_error() == EVAL_OK) {
     printf(
-        ">> Test REUSSI ! La division par zero de sinc a bien ete evitee.\n");
+        ">> Test REUSSI ! \n");
   } else {
     printf(">> Probleme avec les limites en zero.\n");
   }
@@ -253,7 +252,7 @@ void test_racine_et_log() {
   // Tolérance pour les floats, surtout pour Héron et Taylor
   if (res_sqrt > 2.99f && res_sqrt < 3.01f && res_log > -0.01f &&
       res_log < 0.01f) {
-    printf(">> Test REUSSI ! Héron et Taylor fonctionnent super bien.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Oups, verifie tes approximations.\n");
   }
@@ -295,7 +294,7 @@ void test_utilitaires() {
   printf("Resultat attendu: 6.00\n");
 
   if (res == 6.0f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI ! L'imbrication des utilitaires marche nickel.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Probleme avec l'imbrication ou l'arrondi.\n");
   }
@@ -327,7 +326,7 @@ void test_integration() {
   printf("Resultat attendu : 50.00\n");
 
   if (res > 49.9f && res < 50.1f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI ! La methode des trapezes est operationnelle.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Probleme avec le calcul de l'integrale.\n");
   }
@@ -361,7 +360,7 @@ void test_integral_sinus() {
 
   // On vérifie si on est proche de 2.0
   if (res > 1.99f && res < 2.01f && Eval_get_error() == EVAL_OK) {
-    printf(">> Test REUSSI ! L'integration du sinus est precise.\n");
+    printf(">> Test REUSSI ! \n");
   } else {
     printf(">> Probleme avec l'integrale du sinus (verifie ta constante PI ou "
            "ta fonction my_sin).\n");
@@ -373,7 +372,7 @@ void test_integral_sinus() {
 // --- Le programme principal ---
 
 int main(void) {
-  printf("=== LANCEMENT DE LA BATTERIE DE TESTS ===\n");
+  printf("=== LANCEMENT DE DES TESTS ===\n");
 
   // On appelle nos tests un par un
   test_expression_simple();
